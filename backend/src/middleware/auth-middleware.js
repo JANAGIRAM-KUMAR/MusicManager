@@ -16,9 +16,9 @@ const isAdminUser = async (req, res, next) => {
         }
         next(); 
     }
-    catch(err){
+    catch(error){
         console.error("Error in admin check middleware:", err);
-        return res.status(500).json({success: false, message: 'Internal server error'});
+        next(error);
     }
 }
 
