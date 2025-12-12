@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 6001;
 
 
 app.use(express.json());
-app.use(clerkMiddleware()); // Clerk middleware to handle authentication. This will add Clerk-related info to req object
+app.use(clerkMiddleware()); //  This will add Clerk-related info to req object => req.auth 
 app.use(fileupload({
     useTempFiles: true,
     tempFileDir: path.join(__dirname,"tmp"),

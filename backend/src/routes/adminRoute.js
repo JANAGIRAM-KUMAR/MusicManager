@@ -3,12 +3,15 @@ import { createSong, deleteSong, createAlbum, deleteAlbum, checkAdmin } from '..
 import { protectRoute, isAdminUser } from '../middleware/auth-middleware.js';
 const router = Router();
 
-router.get('/check', protectRoute, isAdminUser, checkAdmin);
+// optimized code for middleware
+router.use(protectRoute, isAdminUser);
 
-router.post('/songs', protectRoute, isAdminUser, createSong);
-router.delete('/songs/:id', protectRoute, isAdminUser, deleteSong);
+router.get('/check', checkAdmin);
 
-router.post('/albums', protectRoute, isAdminUser, createAlbum);
-router.delete('/albums/:id', protectRoute, isAdminUser, deleteAlbum);
+router.post('/songs', createSong);
+router.delete('/songs/:id', deleteSong);
+
+router.post('/albums', createAlbum);
+router.delete('/albums/:id', deleteAlbum);
 
 export default router;
