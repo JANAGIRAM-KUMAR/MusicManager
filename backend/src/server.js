@@ -29,7 +29,11 @@ app.use(fileupload({
     createParentPath: true,
     limits:{ fileSize: 5 * 1024 * 1024} // 5 MB file size limit
 })); // Middleware to handle file uploads
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+}
+));
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
