@@ -67,7 +67,7 @@ const getMadeForYouSongs = async (req, res, next) => {
 
 const getTrendingSongs = async (req, res, next) => {
     try{
-        //fetch 6 songs using mongo db aggregation
+        //fetch 4 songs using mongo db aggregation
         const songs = await Song.aggregate([
             {
                 $sample: {

@@ -8,10 +8,10 @@ const getAlbums = async (req, res, next) => {
     }
 }
 
-const getAlbumById = (req, res, next) => {
+const getAlbumById = async (req, res, next) => {
     try {
         const {albumId} = req.params;
-        const album = Album.findById(albumId).populate("songs");
+        const album = await Album.findById(albumId).populate("songs"); // added async await
         if(!album){
             return res.status(404).json({success: false, message: 'Album not found'});
         }
