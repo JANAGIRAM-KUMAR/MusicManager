@@ -3,52 +3,74 @@ import Album from "../models/Album.js";
 import cloudinary from '../lib/cloudinary.js';
 
 // helper function to upload files to cloudinary
-const uploadToCloudinary = async (file) => {
-    try {
-        const result = await cloudinary.uploader.upload(file.tempFilePath, {
-            resource_type: "auto",
-        });
-        return result.secure_url;
+const uploadToCloudinary = async (filePath, folder) => {
+  try {
+    if (!filePath) {
+      throw new Error("No file path provided to Cloudinary");
     }
-    catch (error) {
-        throw new Error('Cloudinary upload failed: ' + error.message);
-    }
-}
+
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder,
+      resource_type: "auto",
+    });
+
+    return result; // return FULL result
+  } catch (error) {
+    throw new Error("Cloudinary upload failed: " + error.message);
+  }
+};
 
 const createSong = async (req, res, next) => {
-    try{
-        if(!req.files || !req.files.audioFile || !req.files.imageFile){
-            return res.status(400).json({message: 'No file uploaded, please upload audio and image files'});
-        }
-        const {title, artist, albumId, duration} = req.body;
-        const audioFile = req.files.audioFile;
-        const imageFile = req.files.imageFile;
-
-        //upload files to cloudinary
-        const audioUrl = uploadToCloudinary(audioFile);
-        const imageUrl = uploadToCloudinary(imageFile);
-
-        const song = new Song({
-            title,
-            artist,
-            albumId: albumId || null,
-            duration,
-            audioUrl,
-            imageUrl
-        });
-        await song.save();
-
-        // if song belongs to an album, update the album's song list
-        if(albumId){
-            await Album.findByIdAndUpdate(albumId, {$push: {songs: song._id}}); 
-        }
-        return res.status(201).json({message: 'Song created successfully', song});
-
-    } catch(error){
-        console.error("Error in create song controller:", err);
-        next(error);
+  try {
+    if (!req.files?.audioFile || !req.files?.imageFile) {
+      return res.status(400).json({
+        message: "Please upload both audio and image files",
+      });
     }
+
+    const { title, artist, albumId, duration } = req.body;
+
+    const audioFile = req.files.audioFile;
+    const imageFile = req.files.imageFile;
+
+    console.log("AUDIO PATH:", audioFile.tempFilePath);
+    console.log("IMAGE PATH:", imageFile.tempFilePath);
+
+    const audioUpload = await uploadToCloudinary(
+      audioFile.tempFilePath,
+      "songs/audio"
+    );
+
+    const imageUpload = await uploadToCloudinary(
+      imageFile.tempFilePath,
+      "songs/images"
+    );
+
+    const song = await Song.create({
+      title,
+      artist,
+      albumId: albumId || null,
+      duration,
+      songUrl: audioUpload.secure_url,
+      imageUrl: imageUpload.secure_url,
+    });
+
+    if (albumId) {
+      await Album.findByIdAndUpdate(albumId, {
+        $push: { songs: song._id },
+      });
+    }
+
+    return res.status(201).json({
+      message: "Song created successfully",
+      song,
+    });
+  } catch (error) {
+    console.error("Error in create song controller:", error);
+    next(error);
+  }
 };
+
 
 const deleteSong = async (req, res, next) => {
     try {
@@ -69,26 +91,43 @@ const deleteSong = async (req, res, next) => {
 }
 
 const createAlbum = async (req, res, next) => {
-    try {
-        const {title, artist, releaseDate} = req.body;
-        const imageFile = req.files.imageFile;
-
-        const imageUrl = uploadToCloudinary(imageFile);
-
-        const album = new Album({
-            title,
-            artist,
-            releaseDate,
-            imageUrl
-        });
-        await album.save();
-        return res.status(201).json({success: true, message: 'Album created successfully', album});
-        
-    } catch (error){
-        console.log("Error in creating Album", error);
-        next(error);
+  try {
+    if (!req.files?.imageFile) {
+      return res.status(400).json({ message: "Album image is required" });
     }
-}
+
+    const { title, artist, releaseDate } = req.body;
+
+    if (!releaseDate) {
+      return res.status(400).json({ message: "releaseDate is required" });
+    }
+
+    const imageFile = req.files.imageFile;
+
+    console.log("IMAGE PATH:", imageFile.tempFilePath);
+
+    const imageUpload = await uploadToCloudinary(
+      imageFile.tempFilePath,
+      "albums/images"
+    );
+
+    const album = await Album.create({
+      title,
+      artist,
+      releaseDate,
+      imageUrl: imageUpload.secure_url,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Album created successfully",
+      album,
+    });
+  } catch (error) {
+    console.log("Error in creating Album", error);
+    next(error);
+  }
+};
 
 const deleteAlbum = async (req, res, next) => {
     try {

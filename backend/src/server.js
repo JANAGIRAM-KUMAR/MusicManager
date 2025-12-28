@@ -1,7 +1,9 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
+
+import express from 'express';
+import cors from 'cors';
+
 
 import { clerkMiddleware } from '@clerk/express';
 import { connectDatabase } from './lib/database.js';
@@ -20,20 +22,26 @@ const app = express();
 const __dirname = path.resolve();
 const PORT = process.env.PORT || 6001;
 
+const httpServer = createServer(app);
+initializeSocket(httpServer);
+
 
 app.use(express.json());
-app.use(clerkMiddleware()); //  This will add Clerk-related info to req object => req.auth 
-app.use(fileupload({
-    useTempFiles: true,
-    tempFileDir: path.join(__dirname,"tmp"),
-    createParentPath: true,
-    limits:{ fileSize: 5 * 1024 * 1024} // 5 MB file size limit
-})); // Middleware to handle file uploads
+
 app.use(cors({
   origin: "http://localhost:3000",
   credentials: true,
 }
 ));
+
+app.use(clerkMiddleware()); //  This will add Clerk-related info to req object => req.auth 
+
+app.use(fileupload({ // Middleware to handle file uploads
+    useTempFiles: true,
+    tempFileDir: path.join(__dirname,"tmp"),
+    createParentPath: true,
+    limits:{ fileSize: 5 * 1024 * 1024} // 5 MB file size limit
+})); 
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);

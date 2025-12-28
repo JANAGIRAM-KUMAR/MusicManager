@@ -26,7 +26,7 @@ const getFeaturedSongs = async (req, res, next) => {
                     title: 1,
                     artist: 1,
                     imageUrl: 1,
-                    audioUrl: 1
+                    songUrl: 1
                 }
             }
         ]);
@@ -53,7 +53,7 @@ const getMadeForYouSongs = async (req, res, next) => {
                     title: 1,
                     artist: 1,
                     imageUrl: 1,
-                    audioUrl: 1
+                    songUrl: 1
                 }
             }
         ]);
@@ -80,7 +80,7 @@ const getTrendingSongs = async (req, res, next) => {
                     title: 1,
                     artist: 1,
                     imageUrl: 1,
-                    audioUrl: 1
+                    songUrl: 1
                 }
             }
         ]);

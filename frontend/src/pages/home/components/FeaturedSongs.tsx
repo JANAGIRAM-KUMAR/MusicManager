@@ -1,9 +1,10 @@
 import FeaturedGridSkeleton from "@/components/skeletons/FeaturedGridSkeleton";
 import { useMusicStore } from "@/stores/useMusicStore"
+import PlayButton from "./PlayButton";
 const FeaturedSongs = () => {
   const {isLoading, error, featuredSongs} = useMusicStore();
   if (isLoading) return <FeaturedGridSkeleton />
-  if(error) return <p className="text-red-500 mb-4 text-lg">{error}</p>
+  if(error) return <p className="text-red-500 mb-4 text-lg">Error !</p>
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       {featuredSongs.map((song) => (
@@ -15,6 +16,7 @@ const FeaturedSongs = () => {
             <p className="font-medium truncate">{song.title}</p>
             <p className="text-sm text-zinc-400 truncate">{song.artist}</p>
           </div>
+            <PlayButton song={song}/>
         </div>
       ))}
     </div>
