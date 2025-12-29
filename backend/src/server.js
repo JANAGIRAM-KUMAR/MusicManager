@@ -12,10 +12,12 @@ import path from 'path';
 
 import userRoute from './routes/userRoute.js';
 import authRoute from './routes/authRoute.js';
-import adminRoute from './routes/adminROute.js';
+import adminRoute from './routes/adminRoute.js';
 import songRoute from './routes/songRoute.js';
 import albumRoute from './routes/albumRoute.js';
 import statsRoute from './routes/statsRoute.js';
+import cron from 'node-cron';
+import fs from 'fs';
 
 
 const app = express();
@@ -38,6 +40,24 @@ app.use(fileupload({ // Middleware to handle file uploads
     createParentPath: true,
     limits:{ fileSize: 5 * 1024 * 1024} // 5 MB file size limit
 })); 
+
+//cron jobs
+
+const tempDir = path.join(process.cwd(), 'tmp');
+cron.schedule("0 * * * *", () => {
+  if(fs.existsSync(tempDir)){
+    fs.readdir(tempDir, (err, files) => {
+      if(err){
+        console.error(err);
+        return;
+      }
+      for (const file of files) {
+        fs.unlinkSync(path.join(tempDir, file), (err) => {});
+      }
+    });
+  }
+});
+
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
