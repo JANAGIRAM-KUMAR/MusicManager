@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMusicStore } from '@/stores/useMusicStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { Clock, Pause, Play, PlayIcon } from 'lucide-react';
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 const formatDuration = (seconds: number) => {
@@ -47,7 +47,7 @@ const AlbumPage = () => {
 				<div className='relative min-h-full'>
 					{/* bg gradient */}
 					<div
-						className='absolute inset-0 bg-gradient-to-b from-[#5038a0]/80 via-zinc-900/80
+						className='absolute inset-0 bg-gradient-to-b from-[#60a5fa]/80 via-zinc-900/80
 					 to-zinc-900 pointer-events-none'
 						aria-hidden='true'
 					/>
@@ -74,7 +74,7 @@ const AlbumPage = () => {
 							<Button
 								onClick={handlePlayAlbum}
 								size='icon'
-								className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 
+								className='w-14 h-14 rounded-2xl bg-blue-300 hover:bg-blue-400 
                                 hover:scale-105 transition-all'
 							    >
 									{isPlaying && currentAlbum?.songs.some((song) => song._id === currentSong?._id)? (
@@ -112,7 +112,7 @@ const AlbumPage = () => {
 									className='grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm text-zinc-400 hover:bg-white/5 rounded-md cursor-pointer group'>
                                         <div className='flex items-center justify-center'>
 											{isCurrentSong && isPlaying ? (
-												<div className='size-4 text-green-500'>♬
+												<div className='size-4 text-blue-400'>♬
 												</div>
 											) : (
 												<span className='group-hover:hidden'>{index + 1}</span>

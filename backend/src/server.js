@@ -22,10 +22,6 @@ const app = express();
 const __dirname = path.resolve();
 const PORT = process.env.PORT || 6001;
 
-const httpServer = createServer(app);
-initializeSocket(httpServer);
-
-
 app.use(express.json());
 
 app.use(cors({
@@ -49,6 +45,13 @@ app.use("/api/admin", adminRoute);
 app.use("/api/songs", songRoute);
 app.use("/api/albums", albumRoute);
 app.use("/api/stats", statsRoute);
+
+if(process.env.NODE_ENV === 'production'){
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    app.get("*", (req, res) => {  
+        res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
+    });
+}
 
 app.use((err, req, res, next) => {
     console.error(err);

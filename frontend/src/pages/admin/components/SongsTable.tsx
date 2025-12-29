@@ -17,7 +17,7 @@ const SongsTable = () => {
 	if (error) {
 		return (
 			<div className='flex items-center justify-center py-8'>
-				<div className='text-red-400'>{error}</div>
+				<div className='text-red-400'>Error !</div>
 			</div>
 		);
 	}

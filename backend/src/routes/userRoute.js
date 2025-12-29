@@ -4,6 +4,5 @@ import { getAllUsers } from '../controllers/user-controller.js';
 const router = Router();
 
 router.get('/', protectRoute, getAllUsers);
-//todo: getMessages
 
 export default router;
