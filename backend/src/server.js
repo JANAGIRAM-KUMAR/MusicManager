@@ -122,7 +122,7 @@ if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(__dirname, '../frontend/dist');
   app.use(express.static(clientPath));
 
-  app.get('*', (req, res, next) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) {
       return next();
     }
