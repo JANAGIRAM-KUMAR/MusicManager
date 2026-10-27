@@ -131,9 +131,11 @@ class AudioEngine {
       },
     });
 
-    this.howl.once("load", () => {
-      this.emit("graph", { mode: "webaudio" });
-    });
+    if (this.howl) {
+      this.howl.once("load", () => {
+        this.emit("graph", { mode: "webaudio" });
+      });
+    }
   }
 
   preload(url: string) {
@@ -152,8 +154,8 @@ class AudioEngine {
           resolve();
           return;
         }
-        this.howl.once("play", () => resolve(), id);
-        setTimeout(() => resolve(), 100);
+      this.howl.once("play", () => resolve(), id as any);
+      setTimeout(() => resolve(), 100);
       } catch (e) {
         reject(e);
       }

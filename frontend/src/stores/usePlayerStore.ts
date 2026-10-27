@@ -484,13 +484,13 @@ export const usePlayerStore = create<PlayerStore>()(
     },
     {
       name: "soundwave-player-settings",
-      partialize: (state) => ({
-        volume: state.volume,
-        muted: state.muted,
-        repeat: state.repeat,
-        shuffle: state.shuffle,
-        crossfade: state.crossfade,
-        eq: state.eq,
+          partialize: (st) => ({
+            volume: st.volume,
+            muted: st.muted,
+            repeat: st.repeat,
+            shuffle: st.shuffle,
+            crossfade: st.crossfade,
+            eq: st.eq,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
