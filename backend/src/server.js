@@ -120,7 +120,7 @@ app.use("/api/lyrics", lyricsRoute);
 
 if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(process.cwd(), 'frontend/dist');
-  app.use(express.static(clientPath));
+  app.use(express.static(clientPath, { index: false }));
 
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
