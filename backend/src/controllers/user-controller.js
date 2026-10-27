@@ -3,8 +3,8 @@ import User from "../models/User.js";
 const getAllUsers = async (req, res, next) => {
     try{
 
-      const currentUserId = req.auth.userId;
-      const users = await User.find({clerkId: {$ne: currentUserId}}); // getting all users except the current user
+      const currentUserId = req.userId;
+      const users = await User.find({_id: {$ne: currentUserId}}); // getting all users except the current user
       res.status(200).json(users);
     }
     catch(error){

@@ -5,4 +5,16 @@ const axiosInstance = axios.create({
     withCredentials: true
 });
 
+axiosInstance.interceptors.request.use((config) => {
+    try {
+        const token = localStorage.getItem("soundwave_token");
+        if (token && config.headers) {
+            (config.headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+        }
+    } catch {
+        // ignore
+    }
+    return config;
+});
+
 export default axiosInstance;

@@ -1,51 +1,24 @@
-import axiosInstance from "@/lib/axios";
-import { useAuth } from "@clerk/clerk-react"
-import { useEffect, useState } from "react";
-import { Loader } from "lucide-react"
+import { useEffect } from "react";
+import { Loader } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-const updateToken = (token: string | null) => {
-    if(token){
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    } else {
-        delete axiosInstance.defaults.headers.common['Authorization']
-    }
-}
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const checkSession = useAuthStore((state) => state.checkSession);
 
-const AuthProvider = ({children} : {children: React.ReactNode}) => {
-    const {getToken} = useAuth();
-    const [loading, setLoading] = useState(true);
-    const {checkAdminStatus} = useAuthStore();
+  useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
 
-    useEffect(() => {
-        const initAuth = async () => {
-            try{
-                const token = await getToken();
-                updateToken(token);
-                if(token){
-                    await checkAdminStatus();
-                }
-            } catch(error){
-                console.log("Error in auth provider", error);
-                updateToken(null);
-            } finally {
-                setLoading(false);
-            }
-        }
-        initAuth();
-    }, [getToken])
-  
-    if(loading){
-        return (
-            <div className="h-screen w-full flex items-center justify-center">
-                <Loader className="size-8 text-blue-500 animate-spin" />
-            </div>
-        );
-    }
-
+  if (isLoading) {
     return (
-        <>{children}</>
-    )
-}
+      <div className="flex h-screen w-full items-center justify-center bg-black">
+        <Loader className="size-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
 
-export default AuthProvider
+  return <>{children}</>;
+};
+
+export default AuthProvider;

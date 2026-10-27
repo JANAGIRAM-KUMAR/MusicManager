@@ -92,6 +92,18 @@ const getTrendingSongs = async (req, res, next) => {
     }
 }
 
-export {getAllSongs, getFeaturedSongs, getMadeForYouSongs, getTrendingSongs};
+const getSongById = async (req, res, next) => {
+    try {
+        const song = await Song.findById(req.params.songId);
+        if (!song) {
+            return res.status(404).json({ success: false, message: "Song not found" });
+        }
+        res.status(200).json(song);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export {getAllSongs, getFeaturedSongs, getMadeForYouSongs, getTrendingSongs, getSongById};
 
 //NEED TO UPDATE THESE FUNCTION IN FUTURE USING ML ALGORITHMS

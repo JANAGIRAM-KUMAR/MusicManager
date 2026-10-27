@@ -6,8 +6,10 @@ export interface Song {
     imageUrl: string;
     songUrl: string;
     duration: number;
+    plays?: number;
     createdAt: string;
     updatedAt: string;
+    lastPlayed?: string;
 }
 
 export interface Album {
@@ -19,6 +21,38 @@ export interface Album {
     songs: Song[];
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface Playlist {
+    _id: string;
+    title: string;
+    description: string;
+    ownerId: string;
+    imageUrl: string;
+    songs: Song[];
+    isPublic: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Artist {
+    name: string;
+    imageUrl: string;
+    songCount: number;
+    duration: number;
+}
+
+export interface ArtistDetail {
+    artist: Artist & { albumCount: number };
+    songs: Song[];
+    albums: Album[];
+}
+
+export interface SearchResults {
+    query: string;
+    songs: Song[];
+    albums: Album[];
+    artists: Artist[];
 }
 
 export interface Stats {
@@ -39,7 +73,17 @@ export interface Message {
 
 export interface User {
     _id: string;
-    clerkId: string;
+    googleId: string;
+    email: string;
     fullName: string;
     imageUrl: string;
+    createdAt?: string;
+}
+
+export type RepeatMode = "off" | "all" | "one";
+
+export interface EqSettings {
+    bass: number;
+    mid: number;
+    treble: number;
 }

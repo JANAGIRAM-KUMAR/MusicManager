@@ -1,26 +1,29 @@
-import { StrictMode } from 'react'
-  import { createRoot } from 'react-dom/client'
-  import './index.css'
-  import App from './App.tsx'
-  import { ClerkProvider } from '@clerk/clerk-react'
-  import { BrowserRouter } from 'react-router-dom'
-import AuthProvider from './providers/AuthProvider.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import "./index.css";
+import App from "./App";
+import AuthProvider from "./providers/AuthProvider";
 
-  // Import your Publishable Key
-  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as
+  | string
+  | undefined;
 
-  if (!PUBLISHABLE_KEY) {
-    throw new Error('Add your Clerk Publishable Key to the .env file')
-  }
+const app = (
+  <StrictMode>
+    <AuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
+  </StrictMode>
+);
 
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <AuthProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </AuthProvider>
-      </ClerkProvider>
-    </StrictMode>,
+createRoot(document.getElementById("root")!).render(
+  GOOGLE_CLIENT_ID ? (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{app}</GoogleOAuthProvider>
+  ) : (
+    app
   )
+);
