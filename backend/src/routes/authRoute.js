@@ -1,7 +1,21 @@
-import {Router} from 'express';
-import { authCallback } from '../controllers/auth-controller.js';
+import { Router } from "express";
+import {
+  getSession,
+  googleLogin,
+  login,
+  logout,
+  oauthCallback,
+  register,
+} from "../controllers/auth-controller.js";
+import { optionalAuth } from "../middleware/auth-middleware.js";
+
 const router = Router();
 
-router.post('/callback', authCallback);
+router.post("/register", register);
+router.post("/login", login);
+router.post("/google", googleLogin);
+router.get("/callback", oauthCallback);
+router.get("/me", optionalAuth, getSession);
+router.post("/logout", logout);
 
 export default router;

@@ -5,7 +5,7 @@ import express from 'express';
 import cors from 'cors';
 
 
-import { clerkMiddleware } from '@clerk/express';
+import cookieParser from 'cookie-parser';
 import { connectDatabase } from './lib/database.js';
 import fileupload from 'express-fileupload';
 import path from 'path';
@@ -16,6 +16,11 @@ import adminRoute from './routes/adminRoute.js';
 import songRoute from './routes/songRoute.js';
 import albumRoute from './routes/albumRoute.js';
 import statsRoute from './routes/statsRoute.js';
+import playlistRoute from './routes/playlistRoute.js';
+import likeRoute from './routes/likeRoute.js';
+import browseRoute from './routes/browseRoute.js';
+import historyRoute from './routes/historyRoute.js';
+import lyricsRoute from './routes/lyricsRoute.js';
 import cron from 'node-cron';
 import fs from 'fs';
 
@@ -24,15 +29,28 @@ const app = express();
 const __dirname = path.resolve();
 const PORT = process.env.PORT || 6001;
 
+app.set("trust proxy", 1);
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}
-));
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use(clerkMiddleware()); //  This will add Clerk-related info to req object => req.auth 
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Origin not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 
 app.use(fileupload({ // Middleware to handle file uploads
     useTempFiles: true,
@@ -65,6 +83,11 @@ app.use("/api/admin", adminRoute);
 app.use("/api/songs", songRoute);
 app.use("/api/albums", albumRoute);
 app.use("/api/stats", statsRoute);
+app.use("/api/playlists", playlistRoute);
+app.use("/api/likes", likeRoute);
+app.use("/api/browse", browseRoute);
+app.use("/api/history", historyRoute);
+app.use("/api/lyrics", lyricsRoute);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
