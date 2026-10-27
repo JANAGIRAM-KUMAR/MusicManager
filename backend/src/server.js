@@ -113,12 +113,17 @@ app.use("/api/browse", browseRoute);
 app.use("/api/history", historyRoute);
 app.use("/api/lyrics", lyricsRoute);
 
+app.get("/api/health", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 if (process.env.NODE_ENV === 'production') {
-  const clientPath = path.resolve(process.cwd(), '../frontend/dist');
+  const clientPath = path.resolve(__dirname, '../frontend/dist');
   app.use(express.static(clientPath));
 
   app.get('*', (req, res, next) => {
-    if (req.originalUrl.startsWith('/api')) {
+    if (req.path.startsWith('/api')) {
       return next();
     }
     res.sendFile(path.join(clientPath, 'index.html'));
@@ -128,11 +133,6 @@ if (process.env.NODE_ENV === 'production') {
 app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({success: false, message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'});
-});
-
-app.get("/api/health", (_req, res) => {
-  res.set('Content-Type', 'application/json');
-  res.status(200).json({ status: "ok", uptime: process.uptime(), env: process.env.NODE_ENV });
 });
 
 app.listen(PORT, () => {
