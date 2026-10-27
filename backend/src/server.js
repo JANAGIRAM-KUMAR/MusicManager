@@ -129,6 +129,10 @@ app.use((err, req, res, next) => {
     res.status(500).json({success: false, message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'});
 });
 
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime(), env: process.env.NODE_ENV });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is live at http://localhost:${PORT}`);
   connectDatabase();
