@@ -122,7 +122,7 @@ if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(process.cwd(), 'frontend/dist');
   app.use(express.static(clientPath, { index: false }));
 
-  app.get('/*splat', (req, res) => {
+  app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
       res.status(404).json({ success: false, message: 'Not Found' });
       return;
