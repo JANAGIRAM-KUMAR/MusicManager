@@ -122,17 +122,26 @@ if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(process.cwd(), 'frontend/dist');
   app.use(express.static(clientPath));
 
-  app.use((req, res, next) => {
+  app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
-      return next();
+      res.status(404).json({ success: false, message: 'Not Found' });
+      return;
     }
     res.sendFile(path.join(clientPath, 'index.html'));
+  });
+} else {
+  app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Not Found' });
   });
 }
 
 app.use((err, req, res, next) => {
     console.error(err);
-    res.status(500).json({success: false, message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'});
+    if (req.path.startsWith('/api/')) {
+      res.status(500).json({success: false, message: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'});
+      return;
+    }
+    res.status(500).send('Internal Server Error');
 });
 
 app.listen(PORT, () => {
