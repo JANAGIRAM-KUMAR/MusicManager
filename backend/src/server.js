@@ -114,13 +114,14 @@ app.use("/api/history", historyRoute);
 app.use("/api/lyrics", lyricsRoute);
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  const clientPath = path.resolve(process.cwd(), '../frontend/dist');
+  app.use(express.static(clientPath));
 
-  // Express 5 safe SPA fallback
-  app.use((req, res) => {
-    res.sendFile(
-      path.join(__dirname, '../frontend/dist/index.html')
-    );
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(clientPath, 'index.html'));
   });
 }
 
@@ -130,6 +131,7 @@ app.use((err, req, res, next) => {
 });
 
 app.get("/api/health", (_req, res) => {
+  res.set('Content-Type', 'application/json');
   res.status(200).json({ status: "ok", uptime: process.uptime(), env: process.env.NODE_ENV });
 });
 
