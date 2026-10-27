@@ -101,6 +101,11 @@ if (process.env.RENDER_EXTERNAL_URL || process.env.APP_URL) {
 }
 
 
+app.get("/api/health", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/admin", adminRoute);
@@ -113,17 +118,12 @@ app.use("/api/browse", browseRoute);
 app.use("/api/history", historyRoute);
 app.use("/api/lyrics", lyricsRoute);
 
-app.get("/api/health", (_req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.status(200).json({ status: "ok", uptime: process.uptime() });
-});
-
 if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(__dirname, '../frontend/dist');
   app.use(express.static(clientPath));
 
   app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) {
+    if (req.path.startsWith('/api/')) {
       return next();
     }
     res.sendFile(path.join(clientPath, 'index.html'));
