@@ -119,7 +119,7 @@ app.use("/api/history", historyRoute);
 app.use("/api/lyrics", lyricsRoute);
 
 if (process.env.NODE_ENV === 'production') {
-  const clientPath = path.resolve(__dirname, '../frontend/dist');
+  const clientPath = path.resolve(process.cwd(), 'frontend/dist');
   app.use(express.static(clientPath));
 
   app.use((req, res, next) => {
