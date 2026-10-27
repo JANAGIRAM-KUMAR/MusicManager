@@ -1,44 +1,63 @@
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import { Outlet } from "react-router-dom"
+import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import LeftSidebar from "./components/LeftSidebar";
-import AudioPlayer from "./components/AudioPlayer";
-import PlayBackControls from "./components/PlayBackControls";
-import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react"
+import { PlayerBar } from "./components/PlayerBar";
+import { QueuePanel } from "./components/QueuePanel";
+import Topbar from "@/components/Topbar";
+import { useLibraryStore } from "@/stores/useLibraryStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { usePlayerStore } from "@/stores/usePlayerStore";
 
 const MainLayout = () => {
-    const [isMobile, setIsMobile] = useState(false);
-    const {isSignedIn} = useAuth();
+  const user = useAuthStore((state) => state.user);
+  const isSignedIn = Boolean(user);
+  const queueOpen = usePlayerStore((state) => state.queueOpen);
+  const setQueueOpen = usePlayerStore((state) => state.setQueueOpen);
+  const fetchLibrary = useLibraryStore((state) => state.fetchLibrary);
+  const resetLibrary = useLibraryStore((state) => state.reset);
 
-	useEffect(() => {
-		const checkMobile = () => {
-			setIsMobile(window.innerWidth < 768);
-		};
+  useEffect(() => {
+    if (isSignedIn) {
+      void fetchLibrary();
+    } else {
+      resetLibrary();
+    }
+  }, [fetchLibrary, isSignedIn, resetLibrary]);
 
-		checkMobile();
-		window.addEventListener("resize", checkMobile);
-		return () => window.removeEventListener("resize", checkMobile);
-	}, []);
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
-        <ResizablePanelGroup direction="horizontal" className="flex-1 flex h-full overflow-hidden p-2">
-            {isSignedIn && (
-                <ResizablePanel defaultSize={20} minSize={isMobile ? 0 : 20} maxSize={30}>
-                <LeftSidebar />
-                </ResizablePanel>
-            )}
-     
-            <ResizableHandle className="w-2 bg-black rounded-lg transition-colors"/>
-            {/* Main layout */}
-            <ResizablePanel defaultSize={isMobile ? 80 : 60}>
-                <Outlet />
-            </ResizablePanel>
-            <ResizableHandle className="w-2 bg-black rounded-lg transition-colors"/>
-        </ResizablePanelGroup>
-        {isSignedIn && <AudioPlayer />}
-        {isSignedIn && <PlayBackControls />}
-    </div>
-  ) 
-}
+    <div className="flex h-screen flex-col gap-2 bg-black p-2 text-white">
+      <div className="flex min-h-0 flex-1 gap-2">
+        {isSignedIn && (
+          <aside className="hidden w-[280px] shrink-0 md:block">
+            <LeftSidebar />
+          </aside>
+        )}
 
-export default MainLayout
+        <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-zinc-900">
+          <Topbar />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <Outlet />
+          </div>
+        </main>
+
+        {queueOpen && (
+          <>
+            <button
+              type="button"
+              aria-label="Close queue"
+              className="fixed inset-0 z-30 cursor-default bg-black/60 lg:hidden"
+              onClick={() => setQueueOpen(false)}
+            />
+            <aside className="fixed top-2 right-2 bottom-[96px] z-40 w-[340px] max-w-[90vw] lg:static lg:z-auto lg:w-[360px] lg:shrink-0 lg:bottom-auto">
+              <QueuePanel />
+            </aside>
+          </>
+        )}
+      </div>
+
+      <PlayerBar />
+    </div>
+  );
+};
+
+export default MainLayout;
