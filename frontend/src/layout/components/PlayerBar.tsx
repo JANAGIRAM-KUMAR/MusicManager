@@ -237,47 +237,22 @@ export const PlayerBar = () => {
               <SlidersHorizontal className="size-4" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-zinc-800 bg-zinc-950 text-white sm:max-w-md">
+          <DialogContent className="border-zinc-800 bg-[#121212] text-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Playback</DialogTitle>
+              <DialogTitle>Playback settings</DialogTitle>
               <DialogDescription className="text-zinc-400">
-                Equalizer, crossfade and engine details.
+                Adjust how music plays
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6">
               <div>
-                <h3 className="mb-3 text-sm font-semibold">Equalizer</h3>
-                {(["bass", "mid", "treble"] as const).map((band) => (
-                  <div key={band} className="mb-4">
-                    <div className="mb-1 flex justify-between text-xs text-zinc-400">
-                      <span className="capitalize">{band}</span>
-                      <span className="tabular-nums">{eq[band] > 0 ? "+" : ""}{eq[band]} dB</span>
-                    </div>
-                    <Slider
-                      value={[eq[band]]}
-                      min={-12}
-                      max={12}
-                      step={0.5}
-                      onValueChange={(value) => setEq({ ...eq, [band]: value[0] })}
-                      className="[&_[data-slot=slider-range]]:bg-emerald-500 [&_[data-slot=slider-thumb]]:border-emerald-500 [&_[data-slot=slider-track]]:bg-zinc-700"
-                    />
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Crossfade</p>
+                    <p className="text-xs text-zinc-400">Allow songs to fade into each other</p>
                   </div>
-                ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-zinc-400 hover:text-white"
-                  onClick={() => setEq({ bass: 0, mid: 0, treble: 0 })}
-                >
-                  Reset equalizer
-                </Button>
-              </div>
-
-              <div>
-                <div className="mb-1 flex justify-between text-xs text-zinc-400">
-                  <span>Crossfade</span>
-                  <span className="tabular-nums">{(crossfade / 1000).toFixed(1)}s</span>
+                  <span className="text-xs tabular-nums text-zinc-400">{(crossfade / 1000).toFixed(1)}s</span>
                 </div>
                 <Slider
                   value={[crossfade / 1000]}
@@ -285,28 +260,45 @@ export const PlayerBar = () => {
                   max={12}
                   step={0.5}
                   onValueChange={(value) => setCrossfade(Math.round(value[0] * 1000))}
-                  className="[&_[data-slot=slider-range]]:bg-emerald-500 [&_[data-slot=slider-thumb]]:border-emerald-500 [&_[data-slot=slider-track]]:bg-zinc-700"
+                  className="[&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:border-white [&_[data-slot=slider-track]]:bg-zinc-700"
                 />
+                <div className="mt-1 flex justify-between text-[10px] text-zinc-500">
+                  <span>Off</span>
+                  <span>12s</span>
+                </div>
               </div>
 
-              <div className="rounded-md border border-zinc-800 p-3 text-xs text-zinc-400">
-                <p className="flex justify-between">
-                  <span>Engine</span>
-                  <span className="font-mono text-emerald-400">
-                    {graphMode === "webaudio" ? "Web Audio (dual deck)" : "HTML5 fallback"}
-                  </span>
-                </p>
-                <p className="mt-1 flex justify-between">
-                  <span>Format support</span>
-                  <span className="font-mono">
-                    {["MP3", "WAV", "AAC", "OGG", "FLAC"]
-                      .filter((format) => {
-                        const probe = document.createElement("audio");
-                        return probe.canPlayType(`audio/${format.toLowerCase()}`) !== "";
-                      })
-                      .join(" · ") || "—"}
-                  </span>
-                </p>
+              <div className="border-t border-zinc-800 pt-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Equalizer</p>
+                    <p className="text-xs text-zinc-400">Fine-tune audio</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-zinc-400 hover:text-white"
+                    onClick={() => setEq({ bass: 0, mid: 0, treble: 0 })}
+                  >
+                    Reset
+                  </Button>
+                </div>
+                {(["bass", "mid", "treble"] as const).map((band) => (
+                  <div key={band} className="mb-3">
+                    <div className="mb-1 flex justify-between text-xs text-zinc-400">
+                      <span className="capitalize">{band}</span>
+                      <span className="tabular-nums">{eq[band] > 0 ? "+" : ""}{eq[band]}</span>
+                    </div>
+                    <Slider
+                      value={[eq[band]]}
+                      min={-12}
+                      max={12}
+                      step={1}
+                      onValueChange={(value) => setEq({ ...eq, [band]: value[0] })}
+                      className="[&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:border-white [&_[data-slot=slider-track]]:bg-zinc-700"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </DialogContent>
