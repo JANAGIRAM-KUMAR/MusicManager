@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
+    <radialGradient id="glow" cx="30%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.35)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0.35)" />
+    </radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)" />
+  <rect width="600" height="600" fill="url(#glow)" />
+  <circle cx="231" cy="149" r="83" fill="rgba(255,255,255,0.06)" />
+  <circle cx="362" cy="238" r="60" fill="rgba(255,255,255,0.06)" />
+  <circle cx="113" cy="327" r="127" fill="rgba(255,255,255,0.06)" />
+  <circle cx="244" cy="416" r="104" fill="rgba(255,255,255,0.06)" />
+  <circle cx="375" cy="185" r="81" fill="rgba(255,255,255,0.06)" />
+  <text x="56" y="330" font-family="Helvetica, Arial, sans-serif" font-size="150" font-weight="800" fill="rgba(255,255,255,0.92)">MD</text>
+  <text x="60" y="472" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Moonlight Dance</text>
+  <text x="60" y="508" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="rgba(255,255,255,0.75)">Silver Shadows</text>
+  <rect x="72" y="361.6639644646425" width="7" height="58.336035535357524" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="88" y="315.02834473838766" width="7" height="104.97165526161234" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="104" y="309.2968534512694" width="7" height="110.70314654873063" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="120" y="347.16510051264106" width="7" height="72.83489948735891" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="136" y="393.17694237814254" width="7" height="26.823057621857437" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="152" y="333.6686071325642" width="7" height="86.33139286743581" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="168" y="306.2975936600068" width="7" height="113.70240633999322" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="184" y="323.9369172804971" width="7" height="96.0630827195029" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="200" y="378.2905284732844" width="7" height="41.7094715267156" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="216" y="360.20492540420224" width="7" height="59.79507459579774" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="232" y="314.35725593014774" width="7" height="105.64274406985226" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="248" y="309.7293384477968" width="7" height="110.2706615522032" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="264" y="348.49775486230453" width="7" height="71.5022451376955" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="280" y="391.57088683928833" width="7" height="28.42911316071166" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="296" y="332.5445034197527" width="7" height="87.45549658024729" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="312" y="306.184125313978" width="7" height="113.81587468602204" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="328" y="324.88745023738034" width="7" height="95.11254976261965" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="344" y="379.85801223097" width="7" height="40.14198776902998" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="360" y="358.7577029495626" width="7" height="61.24229705043737" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="376" y="313.7109461124462" width="7" height="106.28905388755376" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="392" y="310.1879108731677" width="7" height="109.81208912683229" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="408" y="349.8455357537042" width="7" height="70.1544642462958" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="424" y="389.9677798947428" width="7" height="30.032220105257196" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="440" y="331.4400366673176" width="7" height="88.55996333268243" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="456" y="306.09774672509286" width="7" height="113.90225327490712" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="472" y="325.85978501210064" width="7" height="94.14021498789937" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="488" y="381.4317561315948" width="7" height="38.56824386840522" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="504" y="357.32270626992425" width="7" height="62.677293730075725" rx="3.5" fill="rgba(255,255,255,0.22)" />
+</svg>

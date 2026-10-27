@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#831843" />
+      <stop offset="100%" stop-color="#f9a8d4" />
+    </linearGradient>
+    <radialGradient id="glow" cx="30%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.35)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0.35)" />
+    </radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)" />
+  <rect width="600" height="600" fill="url(#glow)" />
+  <circle cx="320" cy="310" r="80" fill="rgba(255,255,255,0.06)" />
+  <circle cx="451" cy="399" r="57" fill="rgba(255,255,255,0.06)" />
+  <circle cx="202" cy="168" r="124" fill="rgba(255,255,255,0.06)" />
+  <circle cx="333" cy="257" r="101" fill="rgba(255,255,255,0.06)" />
+  <circle cx="464" cy="346" r="78" fill="rgba(255,255,255,0.06)" />
+  <text x="56" y="330" font-family="Helvetica, Arial, sans-serif" font-size="150" font-weight="800" fill="rgba(255,255,255,0.92)">WD</text>
+  <text x="60" y="472" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Winter Dreams</text>
+  <text x="60" y="508" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="rgba(255,255,255,0.75)">Arctic Pulse</text>
+  <rect x="72" y="349.77397335462047" width="7" height="70.2260266453795" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="88" y="310.16303843806196" width="7" height="109.83696156193804" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="104" y="313.7444615361911" width="7" height="106.25553846380888" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="120" y="358.83384340467825" width="7" height="61.16615659532174" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="136" y="379.7750567902523" width="7" height="40.224943209747735" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="152" y="324.8366950510444" width="7" height="95.16330494895561" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="168" y="306.1894413392293" width="7" height="113.81055866077072" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="184" y="332.6033904468502" width="7" height="87.39660955314982" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="200" y="391.65564937925336" width="7" height="28.34435062074663" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="216" y="348.42698195646915" width="7" height="71.57301804353082" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="232" y="309.70584077956255" width="7" height="110.29415922043745" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="248" y="314.3920848200463" width="7" height="105.60791517995372" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="264" y="360.2817002810979" width="7" height="59.71829971890209" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="280" y="378.20791603363585" width="7" height="41.792083966364146" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="296" y="323.8873211993181" width="7" height="96.11267880068192" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="312" y="306.3043397492353" width="7" height="113.69566025076473" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="328" y="333.7285226010257" width="7" height="86.27147739897433" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="344" y="393.2618480448146" width="7" height="26.738151955185394" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="360" y="347.09513710948187" width="7" height="72.90486289051813" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="376" y="309.27473719333733" width="7" height="110.72526280666267" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="392" y="315.06447724736415" width="7" height="104.93552275263588" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="408" y="361.7413520569698" width="7" height="58.25864794303021" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="424" y="376.6475019470909" width="7" height="43.35249805290906" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="440" y="322.9600319291444" width="7" height="97.03996807085562" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="456" y="306.44629392849026" width="7" height="113.55370607150971" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="472" y="334.8729569611106" width="7" height="85.12704303888938" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="488" y="394.8705172239013" width="7" height="25.129482776098683" rx="3.5" fill="rgba(255,255,255,0.22)" />
+  <rect x="504" y="345.7788153624674" width="7" height="74.22118463753256" rx="3.5" fill="rgba(255,255,255,0.22)" />
+</svg>
