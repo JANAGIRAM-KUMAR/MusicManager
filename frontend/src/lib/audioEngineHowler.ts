@@ -146,16 +146,17 @@ class AudioEngine {
   }
 
   async play(): Promise<void> {
-    if (!this.howl) return;
+    const howl: any = this.howl;
+    if (!howl) return;
     return new Promise((resolve, reject) => {
       try {
-        const id = this.howl.play();
+        const id = howl.play();
         if (id === undefined || id === null) {
           resolve();
           return;
         }
-      this.howl.once("play", () => resolve(), id as any);
-      setTimeout(() => resolve(), 100);
+        howl.once("play", () => resolve(), id);
+        setTimeout(() => resolve(), 100);
       } catch (e) {
         reject(e);
       }

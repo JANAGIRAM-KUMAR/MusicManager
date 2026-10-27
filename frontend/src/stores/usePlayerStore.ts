@@ -62,9 +62,7 @@ const shuffleArray = <T,>(items: T[]): T[] => {
 
 const songArtwork = (song: Song) => {
   if (!song.imageUrl) return [];
-  return [
-    { src: song.imageUrl, sizes: "512x512", type: "image/jpeg" },
-  ];
+  return [{ src: song.imageUrl, sizes: "512x512", type: "image/jpeg" }];
 };
 
 const updateMediaSession = (song: Song) => {
@@ -75,110 +73,55 @@ const updateMediaSession = (song: Song) => {
     album: song.albumId ? "Album" : "Single",
     artwork: songArtwork(song),
   });
-  navigator.mediaSession.playbackState = "playing";
 };
 
-const updatePositionState = (
-  duration: number,
-  position: number,
-  playbackRate = 1
-) => {
-  if (!("mediaSession" in navigator) || !navigator.mediaSession.setPositionState) {
-    return;
-  }
-  if (!Number.isFinite(duration) || duration <= 0) return;
+const initialState = {
+  queue: [] as Song[],
+  originalQueue: [] as Song[],
+  currentIndex: -1,
+  currentSong: null as Song | null,
+  isPlaying: false,
+  isLoading: false,
+  progress: 0,
+  duration: 0,
+  buffered: 0,
+  volume: 0.7,
+  muted: false,
+  repeat: "off" as RepeatMode,
+  shuffle: false,
+  crossfade: 0,
+  eq: { bass: 0, mid: 0, treble: 0 } as EqSettings,
+  graphMode: "webaudio" as const,
+  queueOpen: false,
+};
+
+const startAudio = async (song: Song) => {
+  usePlayerStore.setState({ isLoading: true });
   try {
-    navigator.mediaSession.setPositionState({
-      duration,
-      playbackRate,
-      position: Math.min(Math.max(position, 0), duration),
-    });
-  } catch {
-    // Some browsers reject position updates while the media is not ready.
+    await audioEngine.playUrl(song.songUrl, { autoplay: true });
+  } catch (error) {
+    console.error("Failed to start audio", error);
+    toast.error("Playback failed");
+    usePlayerStore.setState({ isLoading: false, isPlaying: false });
   }
 };
 
 export const usePlayerStore = create<PlayerStore>()(
   persist(
-    (set, get) => {
-      const startSong = (song: Song, index: number) => {
-        const previous = get().currentSong;
+    (set, get) => ({
+      ...initialState,
+
+      initializeQueue: (songs: Song[]) => {
+        if (!Array.isArray(songs) || songs.length === 0) return;
+        const currentSong = get().currentSong;
+        const existingIndex = currentSong ? songs.findIndex((s) => s._id === currentSong._id) : -1;
         set({
-          currentSong: song,
-          currentIndex: index,
-          isPlaying: true,
-          isLoading: true,
-          progress: 0,
-          duration: song.duration || 0,
+          queue: songs,
+          originalQueue: songs,
+          currentSong: currentSong ?? songs[0],
+          currentIndex: existingIndex !== -1 ? existingIndex : 0,
         });
-
-        if (previous?._id !== song._id) updateMediaSession(song);
-
-        void audioEngine
-          .playUrl(song.songUrl, {
-            autoplay: true,
-            crossfadeMs: get().crossfade,
-          })
-          .then(() => {
-            if (get().currentSong?._id !== song._id) return;
-            const { queue, currentIndex } = get();
-            const nextSong = queue[currentIndex + 1];
-            if (nextSong && nextSong._id !== song._id) {
-              try {
-                audioEngine.preload(nextSong.songUrl);
-              } catch {
-                // ignore
-              }
-            }
-          })
-          .catch((err) => {
-            console.error("Playback error:", err);
-            set({ isPlaying: false, isLoading: false });
-            if (!("mediaSession" in navigator)) return;
-            try {
-              navigator.mediaSession.playbackState = "paused";
-            } catch {
-              // ignore
-            }
-            toast.error("Failed to play this track");
-          });
-      };
-
-      return {
-        queue: [],
-        originalQueue: [],
-        currentIndex: -1,
-        currentSong: null,
-
-        isPlaying: false,
-        isLoading: false,
-        progress: 0,
-        duration: 0,
-        buffered: 0,
-
-        volume: 0.7,
-        muted: false,
-        repeat: "off",
-        shuffle: false,
-        crossfade: 2000,
-        eq: { bass: 0, mid: 0, treble: 0 },
-        graphMode: "element",
-        queueOpen: false,
-
-        initializeQueue: (songs: Song[]) => {
-          if (songs.length === 0) return;
-          const { currentSong } = get();
-          const existingIndex = currentSong
-            ? songs.findIndex((song) => song._id === currentSong._id)
-            : -1;
-
-          set({
-            queue: songs,
-            originalQueue: songs,
-            currentSong: currentSong ?? songs[0],
-            currentIndex: existingIndex !== -1 ? existingIndex : 0,
-          });
-        },
+      },
 
       playSongs: (songs: Song[], startIndex = 0) => {
         const authUser = useAuthStore.getState().user;
@@ -187,333 +130,251 @@ export const usePlayerStore = create<PlayerStore>()(
           useAuthStore.getState().openSignIn?.();
           return;
         }
-        if (!songs || songs.length === 0) {
+        if (!Array.isArray(songs) || songs.length === 0) {
           toast.error("No songs available to play");
           return;
         }
-        const validSongs = songs.filter((s) => s && s.songUrl);
+        const validSongs = songs.filter((s: any) => s && s.songUrl);
         if (validSongs.length === 0) {
           toast.error("No playable songs in this selection");
           return;
         }
         const safeIndex = Math.min(Math.max(startIndex, 0), validSongs.length - 1);
         const selected = validSongs[safeIndex];
-
         if (get().shuffle) {
-          const rest = validSongs.filter((_, index) => index !== safeIndex);
+          const rest = validSongs.filter((_: any, idx: number) => idx !== safeIndex);
           const shuffled = [selected, ...shuffleArray(rest)];
-          set({ queue: shuffled, originalQueue: validSongs, currentIndex: 0 });
-          startSong(selected, 0);
+          set({ queue: shuffled, originalQueue: validSongs, currentIndex: 0, currentSong: selected });
+          void startAudio(selected);
+          updateMediaSession(selected);
           return;
         }
-
-        set({ queue: validSongs, originalQueue: validSongs, currentIndex: safeIndex });
-        startSong(selected, safeIndex);
+        set({ queue: validSongs, originalQueue: validSongs, currentIndex: safeIndex, currentSong: selected });
+        void startAudio(selected);
+        updateMediaSession(selected);
       },
 
-        playSong: (song: Song) => {
-          const authUser = useAuthStore.getState().user;
-          if (!authUser) {
-            toast.error("Log in to listen");
-            useAuthStore.getState().openSignIn?.();
-            return;
-          }
-          const { queue, currentIndex } = get();
+      playSong: (song: Song) => {
+        const authUser = useAuthStore.getState().user;
+        if (!authUser) {
+          toast.error("Log in to listen");
+          useAuthStore.getState().openSignIn?.();
+          return;
+        }
+        const { queue } = get();
+        let index = queue.findIndex((item: any) => item._id === song._id);
+        if (index === -1) {
+          const insertAt = get().currentIndex >= 0 ? Math.min(get().currentIndex + 1, queue.length) : queue.length;
+          const nextQueue = [...queue];
+          nextQueue.splice(insertAt, 0, song);
+          set({ queue: nextQueue, originalQueue: [...get().originalQueue, song] });
+          index = insertAt;
+        }
+        set({ currentIndex: index, currentSong: song });
+        void startAudio(song);
+        updateMediaSession(song);
+      },
 
-          let index = queue.findIndex((item) => item._id === song._id);
-          if (index === -1) {
-            const insertAt =
-              currentIndex >= 0 ? Math.min(currentIndex + 1, queue.length) : queue.length;
-            const nextQueue = [...queue];
-            nextQueue.splice(insertAt, 0, song);
-            set({
-              queue: nextQueue,
-              originalQueue: [...get().originalQueue, song],
-            });
-            index = insertAt;
-          }
-          startSong(song, index);
-        },
+      setCurrentSong: (song: Song | null) => {
+        if (!song) return;
+        get().playSong(song);
+      },
 
-        setCurrentSong: (song: Song | null) => {
-          if (!song) return;
-          get().playSong(song);
-        },
-
-        togglePlay: () => {
-          const { currentSong, queue, currentIndex, isPlaying } = get();
-
-          if (!currentSong) {
-            const first = queue[Math.max(currentIndex, 0)] || queue[0];
-            if (first) {
-              startSong(first, queue.findIndex((s) => s._id === first._id) >= 0 ? queue.findIndex((s) => s._id === first._id) : 0);
-            }
-            return;
-          }
-
-          if (!audioEngine.hasSource()) {
-            startSong(currentSong, Math.max(currentIndex, 0));
-            return;
-          }
-
-          if (isPlaying) {
-            audioEngine.pause();
-            set({ isPlaying: false });
-            if ("mediaSession" in navigator) {
-              navigator.mediaSession.playbackState = "paused";
-            }
-          } else {
-            const { progress, duration } = get();
-            if (duration > 0 && progress >= duration - 0.25) {
-              audioEngine.seek(0);
-              set({ progress: 0 });
-            }
+      togglePlay: () => {
+        const { currentSong, queue, currentIndex, isPlaying } = get();
+        if (!currentSong) {
+          const first = queue[Math.max(currentIndex, 0)] || queue[0];
+          if (first) get().playSong(first);
+          return;
+        }
+        if (!audioEngine.hasSource()) {
+          void startAudio(currentSong);
+          return;
+        }
+        if (isPlaying) {
+          audioEngine.pause();
+          set({ isPlaying: false });
+          if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
+        } else {
+          void audioEngine.play().then(() => {
             set({ isPlaying: true });
-            void audioEngine.play().catch(() => {
-              set({ isPlaying: false });
-            });
-            if ("mediaSession" in navigator) {
-              navigator.mediaSession.playbackState = "playing";
-            }
-          }
-        },
-
-        playNext: (fromEnded = false) => {
-          const { queue, currentIndex, repeat } = get();
-          if (queue.length === 0) return;
-
-          if (repeat === "one" && fromEnded) {
-            const current = queue[currentIndex];
-            if (current) {
-              audioEngine.seek(0);
-              set({ progress: 0, isPlaying: true });
-              void audioEngine.play();
-            }
-            return;
-          }
-
-          const nextIndex = currentIndex + 1;
-          if (nextIndex >= queue.length) {
-            if (repeat === "all") {
-              startSong(queue[0], 0);
-            } else {
-              audioEngine.pause();
-              set({ isPlaying: false, isLoading: false, progress: get().duration });
-              if ("mediaSession" in navigator) {
-                navigator.mediaSession.playbackState = "none";
-              }
-            }
-            return;
-          }
-
-          startSong(queue[nextIndex], nextIndex);
-        },
-
-        playPrevious: () => {
-          const { queue, currentIndex, progress, repeat } = get();
-          if (queue.length === 0) return;
-
-          if (progress > 3) {
-            audioEngine.seek(0);
-            set({ progress: 0 });
-            return;
-          }
-
-          if (currentIndex <= 0) {
-            if (repeat === "all") {
-              startSong(queue[queue.length - 1], queue.length - 1);
-            } else {
-              audioEngine.seek(0);
-              set({ progress: 0 });
-            }
-            return;
-          }
-
-          startSong(queue[currentIndex - 1], currentIndex - 1);
-        },
-
-        seek: (seconds: number) => {
-          audioEngine.seek(seconds);
-          set({ progress: seconds });
-          updatePositionState(get().duration, seconds);
-        },
-
-        toggleShuffle: () => {
-          const { shuffle, queue, originalQueue, currentSong, currentIndex } = get();
-          const base = originalQueue.length > 0 ? originalQueue : queue;
-
-          if (shuffle) {
-            const restored = base.length > 0 ? base : queue;
-            const index = currentSong
-              ? restored.findIndex((song) => song._id === currentSong._id)
-              : -1;
-            set({
-              shuffle: false,
-              queue: restored,
-              originalQueue: restored,
-              currentIndex: index === -1 ? Math.max(currentIndex, 0) : index,
-            });
-            return;
-          }
-
-          if (queue.length === 0) {
-            set({ shuffle: true });
-            return;
-          }
-
-          const current = currentSong ?? queue[currentIndex] ?? queue[0];
-          const rest = queue.filter((song) => song._id !== current?._id);
-          set({
-            shuffle: true,
-            queue: current ? [current, ...shuffleArray(rest)] : shuffleArray(queue),
-            originalQueue: base,
-            currentIndex: 0,
+            if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
           });
-        },
+        }
+      },
 
-        cycleRepeat: () => {
-          const order: RepeatMode[] = ["off", "all", "one"];
-          const current = get().repeat;
-          const next = order[(order.indexOf(current) + 1) % order.length];
-          set({ repeat: next });
-        },
-
-        addToQueue: (song: Song) => {
-          const state = get();
-          // Allow duplicates? Better allow same song multiple times but avoid exact duplicates? Spotify allows adding same song again
-          // Just append
-          set((s) => ({
-            queue: [...s.queue, song],
-            originalQueue: s.originalQueue.some((item) => item._id === song._id)
-              ? s.originalQueue
-              : [...s.originalQueue, song],
-          }));
-          const newState = get();
-          if (!newState.currentSong && newState.queue.length > 0) {
-            set({ currentIndex: 0 });
-            startSong(song, newState.queue.length - 1);
+      playNext: (fromEnded = false) => {
+        const { queue, currentIndex, repeat } = get();
+        if (queue.length === 0) return;
+        if (repeat === "one" && !fromEnded) {
+          const current = get().currentSong;
+          if (current) {
+            audioEngine.seek(0);
+            void audioEngine.play();
+            set({ isPlaying: true });
+            updateMediaSession(current);
           }
-        },
-
-        playNextInQueue: (song: Song) => {
-          const { queue, currentIndex, currentSong } = get();
-          if (!currentSong) {
-            get().playSong(song);
+          return;
+        }
+        let nextIndex = currentIndex + 1;
+        if (nextIndex >= queue.length) {
+          if (repeat === "all") nextIndex = 0;
+          else {
+            set({ isPlaying: false });
+            updateMediaSession(queue[currentIndex]);
             return;
           }
-          // Remove existing occurrence and insert next
-          const filtered = queue.filter((_, idx) => !(queue[idx]._id === song._id && idx > currentIndex));
+        }
+        const nextSong = queue[nextIndex];
+        set({ currentIndex: nextIndex, currentSong: nextSong });
+        void startAudio(nextSong);
+        updateMediaSession(nextSong);
+      },
+
+      playPrevious: () => {
+        const { queue, currentIndex } = get();
+        if (queue.length === 0) return;
+        if (audioEngine.getCurrentTime() > 3) {
+          audioEngine.seek(0);
+          return;
+        }
+        let prevIndex = currentIndex - 1;
+        if (prevIndex < 0) prevIndex = queue.length - 1;
+        const prevSong = queue[prevIndex];
+        set({ currentIndex: prevIndex, currentSong: prevSong });
+        void startAudio(prevSong);
+        updateMediaSession(prevSong);
+      },
+
+      seek: (seconds: number) => {
+        audioEngine.seek(seconds);
+      },
+
+      toggleShuffle: () => {
+        set((s: any) => {
+          const shuffle = !s.shuffle;
+          if (shuffle && s.currentSong) {
+            const rest = s.queue.filter((q: any) => q._id !== s.currentSong._id);
+            const shuffled = [s.currentSong, ...shuffleArray(rest)];
+            const idx = shuffled.findIndex((q: any) => q._id === s.currentSong._id);
+            return { shuffle, queue: shuffled, currentIndex: idx >= 0 ? idx : 0 };
+          }
+          return { shuffle };
+        });
+      },
+
+      cycleRepeat: () => {
+        const order: RepeatMode[] = ["off", "all", "one"];
+        const current = get().repeat;
+        const next = order[(order.indexOf(current) + 1) % order.length];
+        set({ repeat: next });
+      },
+
+      addToQueue: (song: Song) => {
+        set((s: any) => ({
+          queue: [...s.queue, song],
+          originalQueue: s.originalQueue.some((item: any) => item._id === song._id) ? s.originalQueue : [...s.originalQueue, song],
+        }));
+      },
+
+      playNextInQueue: (song: Song) => {
+        const { currentIndex, currentSong } = get();
+        if (!currentSong) {
+          get().playSong(song);
+          return;
+        }
+        set((s: any) => {
+          const filtered = s.queue.filter((_: any, idx: number) => !(s.queue[idx]._id === song._id && idx > currentIndex));
           const insertAt = Math.max(currentIndex + 1, 0);
           const nextQueue = [...filtered];
           nextQueue.splice(insertAt, 0, song);
-          set({
+          return {
             queue: nextQueue,
-            originalQueue: get().originalQueue.some((item) => item._id === song._id)
-              ? get().originalQueue
-              : [...get().originalQueue, song],
-          });
-        },
+            originalQueue: s.originalQueue.some((item: any) => item._id === song._id) ? s.originalQueue : [...s.originalQueue, song],
+          };
+        });
+      },
 
-        removeFromQueue: (index: number) => {
-          const { queue, currentIndex } = get();
-          if (index < 0 || index >= queue.length) return;
-          const nextQueue = queue.filter((_, itemIndex) => itemIndex !== index);
-          const nextOriginal = get().originalQueue.filter(
-            (song) => song._id !== queue[index]._id
-          );
-
-          if (index === currentIndex) {
-            set({
-              queue: nextQueue,
-              originalQueue: nextOriginal,
-              currentIndex: Math.min(index, nextQueue.length - 1),
-            });
-            const replacement = nextQueue[Math.min(index, nextQueue.length - 1)];
-            if (replacement) {
-              startSong(replacement, Math.min(index, nextQueue.length - 1));
-            } else {
-              audioEngine.pause();
-              set({ currentSong: null, currentIndex: -1, isPlaying: false });
-            }
+      removeFromQueue: (index: number) => {
+        const { queue, currentIndex } = get();
+        if (index < 0 || index >= queue.length) return;
+        const nextQueue = queue.filter((_: any, itemIndex: number) => itemIndex !== index);
+        if (index === currentIndex) {
+          if (nextQueue.length === 0) {
+            audioEngine.pause();
+            set({ queue: [], currentSong: null, currentIndex: -1, isPlaying: false });
             return;
           }
+          const replacement = nextQueue[Math.min(index, nextQueue.length - 1)];
+          set({ queue: nextQueue, currentIndex: Math.min(index, nextQueue.length - 1), currentSong: replacement });
+          void startAudio(replacement);
+          updateMediaSession(replacement);
+          return;
+        }
+        set({ queue: nextQueue, currentIndex: index < currentIndex ? currentIndex - 1 : currentIndex });
+      },
 
-          set({
-            queue: nextQueue,
-            originalQueue: nextOriginal,
-            currentIndex: index < currentIndex ? currentIndex - 1 : currentIndex,
-          });
-        },
+      clearQueue: () => {
+        const current = get().currentSong;
+        if (current) {
+          set({ queue: [current], originalQueue: [current], currentIndex: 0 });
+          return;
+        }
+        set({ queue: [], originalQueue: [], currentIndex: -1, currentSong: null });
+      },
 
-        clearQueue: () => {
-          const current = get().currentSong;
-          set({
-            queue: current ? [current] : [],
-            originalQueue: current ? [current] : [],
-            currentIndex: current ? 0 : -1,
-          });
-        },
+      setVolume: (volume: number) => {
+        const clamped = Math.min(Math.max(volume, 0), 1);
+        audioEngine.setVolume(clamped);
+        audioEngine.setMuted(clamped === 0);
+        set({ volume: clamped, muted: clamped === 0 });
+      },
 
-        setVolume: (volume: number) => {
-          const clamped = Math.min(Math.max(volume, 0), 1);
-          audioEngine.setVolume(clamped);
-          audioEngine.setMuted(clamped === 0);
-          set({ volume: clamped, muted: clamped === 0 });
-        },
+      toggleMute: () => {
+        const next = !get().muted;
+        audioEngine.setMuted(next);
+        set({ muted: next });
+      },
 
-        toggleMute: () => {
-          const next = !get().muted;
-          audioEngine.setMuted(next);
-          set({ muted: next });
-        },
+      setCrossfade: (ms: number) => {
+        const clamped = Math.min(Math.max(ms, 0), 12000);
+        audioEngine.setCrossfade(clamped);
+        set({ crossfade: clamped });
+      },
 
-        setCrossfade: (ms: number) => {
-          const clamped = Math.min(Math.max(ms, 0), 12000);
-          audioEngine.setCrossfade(clamped);
-          set({ crossfade: clamped });
-        },
+      setEq: (eq: EqSettings) => {
+        audioEngine.setEq(eq);
+        set({ eq });
+      },
 
-        setEq: (eq: EqSettings) => {
-          audioEngine.setEq(eq);
-          set({ eq });
-        },
-
-        toggleQueue: () => set((state) => ({ queueOpen: !state.queueOpen })),
-        setQueueOpen: (open: boolean) => set({ queueOpen: open }),
-      };
-    },
+      toggleQueue: () => set((s: any) => ({ queueOpen: !s.queueOpen })),
+      setQueueOpen: (open: boolean) => set({ queueOpen: open }),
+    }),
     {
       name: "soundwave-player-settings",
-          partialize: (st: any) => ({
-            volume: st.volume,
-            muted: st.muted,
-            repeat: st.repeat,
-            shuffle: st.shuffle,
-            crossfade: st.crossfade,
-            eq: st.eq,
-          }),
-      onRehydrateStorage: () => (state) => {
-        if (!state) return;
-        audioEngine.setVolume(state.volume);
-        audioEngine.setMuted(state.muted);
-        audioEngine.setCrossfade(state.crossfade);
-        audioEngine.setEq(state.eq);
+      partialize: (persistState: any) => ({
+        volume: persistState.volume,
+        muted: persistState.muted,
+        repeat: persistState.repeat,
+        shuffle: persistState.shuffle,
+        crossfade: persistState.crossfade,
+        eq: persistState.eq,
+      }),
+      onRehydrateStorage: () => (rehydratedState: any) => {
+        if (!rehydratedState) return;
+        try {
+          audioEngine.setVolume(rehydratedState.volume ?? 0.7);
+          audioEngine.setMuted(rehydratedState.muted ?? false);
+          audioEngine.setCrossfade(rehydratedState.crossfade ?? 0);
+          audioEngine.setEq(rehydratedState.eq ?? { bass: 0, mid: 0, treble: 0 });
+        } catch {}
       },
     }
   )
 );
 
-audioEngine.on("time", ({ currentTime, duration, buffered }) => {
-  usePlayerStore.setState((state) => ({
-    progress: currentTime,
-    duration: duration > 0 ? duration : state.duration,
-    buffered,
-  }));
-  updatePositionState(duration, currentTime);
-});
-
-audioEngine.on("duration", ({ duration }) => {
-  if (duration > 0) usePlayerStore.setState({ duration });
+audioEngine.on("time", ({ currentTime, duration, buffered }: any) => {
+  usePlayerStore.setState(() => ({ progress: currentTime, duration, buffered }));
 });
 
 audioEngine.on("play", () => {
@@ -522,54 +383,39 @@ audioEngine.on("play", () => {
 });
 
 audioEngine.on("pause", () => {
-  usePlayerStore.setState({ isPlaying: false, isLoading: false });
+  usePlayerStore.setState({ isPlaying: false });
   if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
-});
-
-audioEngine.on("loading", ({ loading }) => {
-  usePlayerStore.setState({ isLoading: loading });
 });
 
 audioEngine.on("ended", () => {
   usePlayerStore.getState().playNext(true);
 });
 
-audioEngine.on("error", ({ message }) => {
+audioEngine.on("loading", ({ loading }: any) => {
+  usePlayerStore.setState({ isLoading: loading });
+});
+
+audioEngine.on("error", ({ message }: any) => {
   usePlayerStore.setState({ isPlaying: false, isLoading: false });
-  console.warn("Audio engine error:", message);
   toast.error(message || "Playback failed");
 });
 
-audioEngine.on("graph", ({ mode }) => {
+audioEngine.on("graph", ({ mode }: any) => {
   usePlayerStore.setState({ graphMode: mode });
 });
 
-if ("mediaSession" in navigator) {
+if (typeof navigator !== "undefined" && "mediaSession" in navigator) {
   navigator.mediaSession.setActionHandler("play", () => {
-    const state = usePlayerStore.getState();
-    if (!state.isPlaying) state.togglePlay();
+    const s = usePlayerStore.getState();
+    if (!s.isPlaying) s.togglePlay();
   });
   navigator.mediaSession.setActionHandler("pause", () => {
-    const state = usePlayerStore.getState();
-    if (state.isPlaying) state.togglePlay();
+    const s = usePlayerStore.getState();
+    if (s.isPlaying) s.togglePlay();
   });
-  navigator.mediaSession.setActionHandler("nexttrack", () => {
-    usePlayerStore.getState().playNext();
-  });
-  navigator.mediaSession.setActionHandler("previoustrack", () => {
-    usePlayerStore.getState().playPrevious();
-  });
-  navigator.mediaSession.setActionHandler("seekbackward", (details) => {
-    const state = usePlayerStore.getState();
-    state.seek(Math.max(0, state.progress - (details.seekOffset ?? 10)));
-  });
-  navigator.mediaSession.setActionHandler("seekforward", (details) => {
-    const state = usePlayerStore.getState();
-    state.seek(Math.min(state.duration, state.progress + (details.seekOffset ?? 10)));
-  });
-  navigator.mediaSession.setActionHandler("seekto", (details) => {
-    if (typeof details.seekTime === "number") {
-      usePlayerStore.getState().seek(details.seekTime);
-    }
+  navigator.mediaSession.setActionHandler("nexttrack", () => usePlayerStore.getState().playNext());
+  navigator.mediaSession.setActionHandler("previoustrack", () => usePlayerStore.getState().playPrevious());
+  navigator.mediaSession.setActionHandler("seekto", (details: any) => {
+    if (typeof details.seekTime === "number") usePlayerStore.getState().seek(details.seekTime);
   });
 }
