@@ -110,8 +110,8 @@ export const PlayerBar = () => {
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
-    <footer className="flex h-[86px] shrink-0 items-center gap-3 px-2 text-white sm:px-3">
-      <div className="flex min-w-0 flex-1 items-center gap-3 sm:w-[30%] sm:flex-none">
+    <footer className="flex h-[78px] shrink-0 items-center gap-2 rounded-lg bg-zinc-900 px-2 text-white sm:h-[86px] sm:gap-3 sm:px-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 sm:w-[30%] sm:flex-none">
         {currentSong ? (
           <>
             <CoverImage

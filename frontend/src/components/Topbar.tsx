@@ -62,8 +62,8 @@ const Topbar = () => {
       : "";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-2 bg-zinc-900/80 px-3 py-3 backdrop-blur-md sm:px-4">
-      <div className="hidden items-center gap-1 sm:flex">
+    <header className="sticky top-0 z-20 flex items-center gap-2 bg-zinc-900/80 px-2 py-2 backdrop-blur-md sm:px-4 sm:py-3">
+      <div className="flex items-center gap-1">
         <button
           type="button"
           aria-label="Go back"

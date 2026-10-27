@@ -78,7 +78,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-full bg-gradient-to-b from-emerald-500/20 via-zinc-900 to-zinc-900 pb-10">
-      <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+      <div className="px-3 pt-3 sm:px-6 sm:pt-6">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{greeting()}</h1>
