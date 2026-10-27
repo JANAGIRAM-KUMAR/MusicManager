@@ -484,14 +484,14 @@ export const usePlayerStore = create<PlayerStore>()(
     },
     {
       name: "soundwave-player-settings",
-          partialize: (st) => ({
+          partialize: (st: any) => ({
             volume: st.volume,
             muted: st.muted,
             repeat: st.repeat,
             shuffle: st.shuffle,
             crossfade: st.crossfade,
             eq: st.eq,
-      }),
+          }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
         audioEngine.setVolume(state.volume);

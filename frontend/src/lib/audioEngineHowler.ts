@@ -93,7 +93,7 @@ class AudioEngine {
     this.emit("loading", { loading: true });
     this.currentUrl = url;
 
-    const howl = new Howl({
+    const howl: any = new Howl({
       src: [url],
       html5: true,
       preload: true,
@@ -132,7 +132,7 @@ class AudioEngine {
     });
 
     if (this.howl) {
-      this.howl.once("load", () => {
+      (this.howl as any).once("load", () => {
         this.emit("graph", { mode: "webaudio" });
       });
     }
