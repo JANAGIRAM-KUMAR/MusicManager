@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import toast from "react-hot-toast";
 import { audioEngine } from "@/lib/audioEngine";
 import type { EqSettings, RepeatMode, Song } from "@/types";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface PlayerStore {
   queue: Song[];
@@ -180,6 +181,12 @@ export const usePlayerStore = create<PlayerStore>()(
         },
 
       playSongs: (songs: Song[], startIndex = 0) => {
+        const authUser = useAuthStore.getState().user;
+        if (!authUser) {
+          toast.error("Log in to listen");
+          useAuthStore.getState().openSignIn?.();
+          return;
+        }
         if (!songs || songs.length === 0) {
           toast.error("No songs available to play");
           return;
@@ -205,6 +212,12 @@ export const usePlayerStore = create<PlayerStore>()(
       },
 
         playSong: (song: Song) => {
+          const authUser = useAuthStore.getState().user;
+          if (!authUser) {
+            toast.error("Log in to listen");
+            useAuthStore.getState().openSignIn?.();
+            return;
+          }
           const { queue, currentIndex } = get();
 
           let index = queue.findIndex((item) => item._id === song._id);

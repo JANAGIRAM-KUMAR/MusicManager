@@ -14,6 +14,7 @@ interface AuthStore {
   signUpWithEmail: (fullName: string, email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   reset: () => void;
+  openSignIn: () => void;
 }
 
 const initialState = {
@@ -26,6 +27,11 @@ const initialState = {
 
 export const useAuthStore = create<AuthStore>((set) => ({
   ...initialState,
+  openSignIn: () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("open-auth-dialog"));
+    }
+  },
 
   checkSession: async () => {
     try {

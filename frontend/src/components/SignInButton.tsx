@@ -28,6 +28,12 @@ export const SignInButton = ({ children }: SignInButtonProps) => {
   const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle);
   const signInWithEmail = useAuthStore((state) => state.signInWithEmail);
   const signUpWithEmail = useAuthStore((state) => state.signUpWithEmail);
+
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("open-auth-dialog", handler);
+    return () => window.removeEventListener("open-auth-dialog", handler);
+  }, []);
   const isSigningIn = useAuthStore((state) => state.isSigningIn);
 
   const [loginEmail, setLoginEmail] = useState("");

@@ -6,6 +6,7 @@ import { LikeButton } from "@/components/LikeButton";
 import { PlaylistPickerDialog } from "@/components/PlaylistPickerDialog";
 import { formatTime } from "@/lib/format";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { cn } from "@/lib/utils";
 import type { Song } from "@/types";
 
