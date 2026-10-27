@@ -100,7 +100,7 @@ const updatePositionState = (
 
 export const usePlayerStore = create<PlayerStore>()(
   persist(
-    (set) => {
+    (set, get) => {
       const startSong = (song: Song, index: number) => {
         const previous = get().currentSong;
         set({

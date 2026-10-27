@@ -50,7 +50,7 @@ export const PlayerBar = () => {
   const shuffle = usePlayerStore((state) => state.shuffle);
   const crossfade = usePlayerStore((state) => state.crossfade);
   const eq = usePlayerStore((state) => state.eq);
-  const _graphMode = usePlayerStore((state) => state.graphMode);
+  void usePlayerStore((state) => state.graphMode);
   const queueOpen = usePlayerStore((state) => state.queueOpen);
 
   const togglePlay = usePlayerStore((state) => state.togglePlay);

@@ -93,14 +93,14 @@ class AudioEngine {
     this.emit("loading", { loading: true });
     this.currentUrl = url;
 
-    this.howl = new Howl({
+    const howl = new Howl({
       src: [url],
       html5: true,
       preload: true,
       volume: this.muted ? 0 : this.volume,
       onload: () => {
         this.emit("loading", { loading: false });
-        this.emit("duration", { duration: this.howl?.duration() || 0 });
+        this.emit("duration", { duration: howl.duration() || 0 });
         this.startTimeLoop();
         if (options.autoplay !== false) {
           this.play().catch((e) => {
@@ -121,15 +121,16 @@ class AudioEngine {
         this.emit("ended", undefined);
         this.stopTimeLoop();
       },
-      onloaderror: (_id: number, error: unknown) => {
+      onloaderror: (_id: number | undefined, error: unknown) => {
         this.emit("loading", { loading: false });
         this.emit("error", { message: String(error), url });
       },
-      onplayerror: (_id: number, error: unknown) => {
+      onplayerror: (_id: number | undefined, error: unknown) => {
         this.emit("loading", { loading: false });
         this.emit("error", { message: String(error), url });
       },
     });
+    this.howl = howl;
 
     this.howl.once("load", () => {
       this.emit("graph", { mode: "webaudio" });
