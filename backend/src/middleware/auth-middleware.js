@@ -7,7 +7,11 @@ import {
   verifySessionToken,
 } from "../lib/session.js";
 
-const adminEmail = () => (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+const adminEmails = () =>
+  (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")
+    .split(/[\s,]+/)
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
 
 const publicUser = (user) => ({
   _id: user._id.toString(),
@@ -76,9 +80,9 @@ const isAdminUser = async (req, res, next) => {
     }
 
     const user = await User.findById(req.userId).select("email");
-    const isAdmin = Boolean(
-      user?.email && user.email.toLowerCase() === adminEmail()
-    );
+    const admins = adminEmails();
+    const userEmail = user?.email?.toLowerCase() ?? req.userEmail?.toLowerCase() ?? "";
+    const isAdmin = admins.length > 0 && admins.includes(userEmail);
 
     if (!isAdmin) {
       return res.status(403).json({

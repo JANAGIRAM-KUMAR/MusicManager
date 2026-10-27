@@ -36,7 +36,7 @@ export const MediaCard = ({
             round ? "rounded-full" : "rounded-md"
           )}
         />
-      {onPlay && (
+      {false && onPlay && (
         <button
           type="button"
           aria-label={`Play ${title}`}
@@ -80,5 +80,36 @@ export const MediaCard = ({
     );
   }
 
-  return <div className={cn("group block rounded-lg p-3 transition hover:bg-white/10", className)}>{content}</div>;
+  return (
+    <div
+      role={onPlay ? "button" : undefined}
+      tabIndex={onPlay ? 0 : undefined}
+      onClick={() => {
+        if (!onPlay) return;
+        const user = useAuthStore.getState().user;
+        if (!user) {
+          toast.error("Log in to listen");
+          useAuthStore.getState().openSignIn?.();
+          return;
+        }
+        onPlay();
+      }}
+      onKeyDown={(event) => {
+        if (!onPlay) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          const user = useAuthStore.getState().user;
+          if (!user) {
+            toast.error("Log in to listen");
+            useAuthStore.getState().openSignIn?.();
+            return;
+          }
+          onPlay();
+        }
+      }}
+      className={cn("group block rounded-lg p-3 transition hover:bg-white/10", onPlay && "cursor-pointer", className)}
+    >
+      {content}
+    </div>
+  );
 };

@@ -103,34 +103,33 @@ const HomePage = () => {
             {quickPicks.map((pick) => (
               <div
                 key={pick.id}
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md bg-white/10 pr-3 transition hover:bg-white/20"
+                className="group relative flex items-center gap-3 overflow-hidden rounded-md bg-white/10 transition hover:bg-white/20"
               >
-                <Link to={pick.href} className="flex min-w-0 flex-1 items-center gap-3">
-                  <CoverImage
-                    src={pick.imageUrl}
-                    alt={pick.title}
-                    fallbackLabel={pick.title}
-                    className="size-16 shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{pick.title}</p>
-                    <p className="truncate text-xs text-zinc-400">{pick.subtitle}</p>
-                  </div>
-                </Link>
-                <button
-                  type="button"
-                  aria-label={`Play ${pick.title}`}
-                  disabled={!(pick.songs?.filter((s: any) => s && s.songUrl) || []).length}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const songs = pick.songs?.filter((s: any) => s && s.songUrl) || [];
-                    if (songs.length > 0) playSongs(songs);
-                  }}
-                  className="grid size-10 translate-y-1 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-lg transition group-hover:translate-y-0 group-hover:opacity-100 hover:bg-emerald-400 disabled:pointer-events-none disabled:opacity-0"
-                >
-                  <Play className="size-4 fill-current" />
-                </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const songs = pick.songs?.filter((s: any) => s && s.songUrl) || [];
+                  if (songs.length > 0) {
+                    playSongs(songs);
+                  } else if (pick.href) {
+                    window.location.assign(pick.href);
+                  }
+                }}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              >
+                <CoverImage
+                  src={pick.imageUrl}
+                  alt={pick.title}
+                  fallbackLabel={pick.title}
+                  className="size-16 shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-white">{pick.title}</p>
+                  <p className="truncate text-xs text-zinc-400">{pick.subtitle}</p>
+                </div>
+              </button>
               </div>
             ))}
           </div>

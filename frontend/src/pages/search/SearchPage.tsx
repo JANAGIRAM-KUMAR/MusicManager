@@ -32,16 +32,13 @@ const SearchPage = () => {
   }, [urlQuery]);
 
   useEffect(() => {
-    const handle = setTimeout(() => {
-      const trimmed = input.trim();
-      if (trimmed === urlQuery) return;
-      const next = new URLSearchParams(searchParams);
-      if (trimmed) next.set("q", trimmed);
-      else next.delete("q");
-      setSearchParams(next, { replace: true });
-    }, 350);
-    return () => clearTimeout(handle);
-  }, [input, searchParams, setSearchParams, urlQuery]);
+    const trimmed = input.trim();
+    if (trimmed === urlQuery) return;
+    const next = new URLSearchParams(searchParams);
+    if (trimmed) next.set("q", trimmed);
+    else next.delete("q");
+    setSearchParams(next, { replace: true });
+  }, [input]);
 
   useEffect(() => {
     void search(urlQuery);
@@ -128,9 +125,6 @@ const SearchPage = () => {
                           fallbackLabel={topResult.title}
                           className="size-24 rounded-lg shadow-lg sm:size-28"
                         />
-                        <span className="absolute right-1 bottom-1 grid size-10 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-lg transition group-hover:opacity-100">
-                          <Play className="size-4 fill-current" />
-                        </span>
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-xl font-bold sm:text-2xl">{topResult.title}</p>
