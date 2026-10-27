@@ -15,7 +15,6 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "@clerk/clerk-react";
 
 
 interface NewSong {
@@ -45,8 +44,6 @@ const AddSongDialog = () => {
 	const audioInputRef = useRef<HTMLInputElement>(null);
 	const imageInputRef = useRef<HTMLInputElement>(null);
 
-    const { getToken } = useAuth();
-
 	const handleSubmit = async () => {
 		setIsLoading(true);
 
@@ -67,15 +64,7 @@ const AddSongDialog = () => {
 			formData.append("audioFile", files.audio);
 			formData.append("imageFile", files.image);
 
-			const token = await getToken();
-
-
-            await axiosInstance.post("/admin/songs", formData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-            },
-            });
+			await axiosInstance.post("/admin/songs", formData);
 
 
 			setNewSong({

@@ -13,7 +13,6 @@ import axiosInstance from "@/lib/axios";
 import { Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "@clerk/clerk-react";
 
 const AddAlbumDialog = () => {
 	const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
@@ -34,8 +33,6 @@ const AddAlbumDialog = () => {
 			setImageFile(file);
 		}
 	};
-
-    const { getToken } = useAuth();
 	const handleSubmit = async () => {
 		setIsLoading(true);
 
@@ -50,14 +47,7 @@ const AddAlbumDialog = () => {
 			formData.append("releaseDate", newAlbum.releaseDate.toString());
 			formData.append("imageFile", imageFile);
 
-            const token = await getToken();
-
-			await axiosInstance.post("/admin/albums", formData, {
-				headers: {
-                    Authorization: `Bearer ${token}`,
-					"Content-Type": "multipart/form-data",
-				},
-			});
+			await axiosInstance.post("/admin/albums", formData);
 
 			setNewAlbum({
 				title: "",
