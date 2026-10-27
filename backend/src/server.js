@@ -119,8 +119,8 @@ app.use("/api/history", historyRoute);
 app.use("/api/lyrics", lyricsRoute);
 
 if (process.env.NODE_ENV === 'production') {
-  const clientPath = path.resolve(process.cwd(), 'frontend/dist');
-  app.use(express.static(clientPath, { index: false }));
+  const clientPath = path.resolve(process.cwd(), '../frontend/dist');
+  app.use(express.static(clientPath));
 
   app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
