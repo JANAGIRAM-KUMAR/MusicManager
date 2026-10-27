@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import { SignInButton } from "@/components/SignInButton";
-import { Link } from "react-router-dom";
-import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CoverImage } from "@/components/CoverImage";
 import { MediaCard } from "@/components/MediaCard";

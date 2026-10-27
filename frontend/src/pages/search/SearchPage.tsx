@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Loader2, Play, Search as SearchIcon } from "lucide-react";
+import { Loader2, Search as SearchIcon } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { MediaCard } from "@/components/MediaCard";
 import { SongRow } from "@/components/SongRow";

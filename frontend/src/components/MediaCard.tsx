@@ -49,7 +49,7 @@ export const MediaCard = ({
               useAuthStore.getState().openSignIn?.();
               return;
             }
-            onPlay();
+            onPlay?.();
           }}
             className="absolute right-2 bottom-2 grid size-11 translate-y-2 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-xl transition duration-200 group-hover:translate-y-0 group-hover:opacity-100 hover:scale-105 hover:bg-emerald-400"
           >
