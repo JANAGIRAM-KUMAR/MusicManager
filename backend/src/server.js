@@ -70,11 +70,35 @@ cron.schedule("0 * * * *", () => {
         return;
       }
       for (const file of files) {
-        fs.unlinkSync(path.join(tempDir, file), (err) => {});
+        try {
+          fs.unlinkSync(path.join(tempDir, file));
+        } catch (e) {
+          // ignore
+        }
       }
     });
   }
 });
+
+// Keep-alive for Render free tier
+if (process.env.RENDER_EXTERNAL_URL || process.env.APP_URL) {
+  const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
+  cron.schedule("*/14 * * * *", async () => {
+    try {
+      const url = new URL(keepAliveUrl);
+      const http = await import(url.protocol === "https:" ? "https" : "http");
+      http.default.get(url, (res) => {
+        res.resume();
+      }).on("error", () => {});
+    } catch (e) {
+      // ignore
+    }
+  });
+} else {
+  cron.schedule("*/14 * * * *", () => {
+    // Self-ping disabled if no external URL configured
+  });
+}
 
 
 app.use("/api/users", userRoute);
