@@ -121,11 +121,11 @@ class AudioEngine {
         this.emit("ended", undefined);
         this.stopTimeLoop();
       },
-      onloaderror: (_id, error) => {
+      onloaderror: (_id: number, error: unknown) => {
         this.emit("loading", { loading: false });
         this.emit("error", { message: String(error), url });
       },
-      onplayerror: (_id, error) => {
+      onplayerror: (_id: number, error: unknown) => {
         this.emit("loading", { loading: false });
         this.emit("error", { message: String(error), url });
       },

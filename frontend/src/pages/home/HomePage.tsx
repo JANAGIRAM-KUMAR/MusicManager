@@ -65,7 +65,7 @@ const HomePage = () => {
   ].slice(0, 8);
 
   const renderSongCards = (songs: Song[]) =>
-    songs.map((song, index) => (
+    songs.map((song) => (
       <MediaCard
         key={song._id}
         title={song.title}

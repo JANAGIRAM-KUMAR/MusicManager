@@ -2,7 +2,7 @@ import { useAuthStore } from "@/stores/useAuthStore"
 import Header from "./components/Header";
 import DashboardStats from "./components/DashboardStats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Album, BarChart3, Music, Settings, Users } from "lucide-react";
+import { Album, BarChart3, Music, Users } from "lucide-react";
 import SongsTabContent from "./components/SongsTabContent";
 import AlbumsTabContent from "./components/AlbumsTabContent";
 import UsersTabContent from "./components/UsersTabContent";
