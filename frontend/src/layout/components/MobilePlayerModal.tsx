@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, SlidersHorizontal, ListMusic } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { LikeButton } from "@/components/LikeButton";
@@ -35,12 +35,26 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
 
   const [scrub, setScrub] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleCloseEvent = () => onClose();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("spotify:close-all-dialogs", handleCloseEvent);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("spotify:close-all-dialogs", handleCloseEvent);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
   if (!open || !currentSong) return null;
 
   const displayProgress = scrub ?? progress;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col glass-dock backdrop-blur-3xl bg-[#08090d]/85 p-6 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-0 z-[75] flex flex-col glass-dock backdrop-blur-3xl bg-[#08090d]/95 p-6 pb-20 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
       {/* Dynamic ambient orb behind album */}
       <div className="pointer-events-none fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 size-72 rounded-full bg-emerald-500/20 blur-[100px]" />
 
@@ -190,14 +204,14 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
         </div>
 
         {/* Footer Actions: Lyrics & Settings */}
-        <div className="flex items-center justify-between pt-3 border-t border-white/10">
+        <div className="flex items-center justify-between pt-4 pb-8 mb-4 border-t border-white/10 shrink-0">
           <button
             type="button"
             onClick={() => {
               onClose();
               setLyricsOpen(true);
             }}
-            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-full glass-pill active:scale-95 transition"
+            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2.5 rounded-full glass-pill active:scale-95 transition"
           >
             <Mic2 className="size-4 text-emerald-400" />
             <span>Lyrics</span>
@@ -210,7 +224,7 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
               void audioEngine.resumeContext();
               setAudioSettingsOpen(true);
             }}
-            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-full glass-pill active:scale-95 transition"
+            className="flex items-center gap-2 text-xs font-semibold text-emerald-300 hover:text-white px-4 py-2.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 active:scale-95 transition shadow-sm"
           >
             <SlidersHorizontal className="size-4 text-emerald-400" />
             <span>Audio FX</span>

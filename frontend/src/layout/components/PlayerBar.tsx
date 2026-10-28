@@ -61,7 +61,8 @@ export const PlayerBar = () => {
   const lyricsOpen = usePlayerStore((state) => state.lyricsOpen);
   const toggleLyrics = usePlayerStore((state) => state.toggleLyrics);
   const setLyricsOpen = usePlayerStore((state) => state.setLyricsOpen);
-  const [mobileModalOpen, setMobileModalOpen] = useState(false);
+  const mobileModalOpen = usePlayerStore((state) => state.mobilePlayerOpen);
+  const setMobilePlayerOpen = usePlayerStore((state) => state.setMobilePlayerOpen);
 
   const currentSongId = currentSong?._id;
 
@@ -116,7 +117,7 @@ export const PlayerBar = () => {
       {currentSong && (
         <div className="sm:hidden w-full">
           <div
-            onClick={() => setMobileModalOpen(true)}
+            onClick={() => setMobilePlayerOpen(true)}
             className="group relative flex items-center justify-between gap-3 p-2.5 glass-dock rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.65)] cursor-pointer active:scale-[0.99] transition overflow-hidden"
           >
             {/* Top progress indicator bar */}
@@ -148,11 +149,25 @@ export const PlayerBar = () => {
             >
               <button
                 type="button"
+                onClick={() => {
+                  audioEngine.unlock();
+                  void audioEngine.resumeContext();
+                  setAudioSettingsOpen(true);
+                }}
+                className="size-8 grid place-items-center rounded-full text-zinc-400 hover:text-white active:scale-90 transition"
+                aria-label="Audio settings and equalizer"
+                title="Audio FX"
+              >
+                <SlidersHorizontal className="size-4 text-emerald-400" />
+              </button>
+              <button
+                type="button"
                 onClick={() => setLyricsOpen(true)}
                 className="size-8 grid place-items-center rounded-full text-zinc-400 hover:text-white active:scale-90 transition"
                 aria-label="Open lyrics"
+                title="Lyrics"
               >
-                <Mic2 className="size-4 text-emerald-400" />
+                <Mic2 className="size-4 text-zinc-300" />
               </button>
               <LikeButton song={currentSong} className="size-8 grid place-items-center" />
               <button
@@ -365,7 +380,7 @@ export const PlayerBar = () => {
       {/* Mobile Fullscreen Modal */}
       <MobilePlayerModal
         open={mobileModalOpen}
-        onClose={() => setMobileModalOpen(false)}
+        onClose={() => setMobilePlayerOpen(false)}
       />
     </>
   );

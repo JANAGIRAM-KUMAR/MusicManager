@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useMusicStore } from "@/stores/useMusicStore";
 import type { Song } from "@/types";
-import { Pencil, Loader2, X, Check } from "lucide-react";
+import { Pencil, Loader2, X, Check, Clock } from "lucide-react";
 import toast from "react-hot-toast";
+import { formatTime } from "@/lib/format";
 
 interface EditSongDialogProps {
   song: Song;
@@ -16,7 +17,6 @@ export default function EditSongDialog({ song }: EditSongDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(song.title);
   const [artist, setArtist] = useState(song.artist);
-  const [duration, setDuration] = useState(song.duration.toString());
 
   // Determine initial selected album IDs
   const initialAlbumIds = song.albumIds && song.albumIds.length > 0
@@ -46,7 +46,7 @@ export default function EditSongDialog({ song }: EditSongDialogProps) {
       await updateSong(song._id, {
         title: title.trim(),
         artist: artist.trim(),
-        duration: Number(duration) || song.duration,
+        duration: song.duration,
         albumIds: selectedAlbumIds,
         albumId: selectedAlbumIds.length > 0 ? selectedAlbumIds[0] : null,
       });
@@ -110,17 +110,19 @@ export default function EditSongDialog({ song }: EditSongDialogProps) {
             />
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-zinc-400 mb-1 block">Duration (seconds)</label>
-            <Input
-              type="number"
-              min="0"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              placeholder="Duration in seconds"
-              className="bg-zinc-800/80 border-zinc-700"
-              required
-            />
+          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/60">
+            <div className="flex items-center gap-2.5">
+              <Clock className="size-4 text-emerald-400" />
+              <div>
+                <span className="text-xs font-semibold text-white block">Track Duration</span>
+                <span className="text-xs text-emerald-400 font-mono font-medium">
+                  {formatTime(song.duration)} ({song.duration} seconds)
+                </span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] uppercase font-mono border-zinc-600 text-zinc-300">
+              Auto
+            </Badge>
           </div>
 
           {/* Album Multi-Selector */}

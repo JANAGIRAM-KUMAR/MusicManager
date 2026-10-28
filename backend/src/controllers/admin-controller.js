@@ -51,7 +51,33 @@ const createSong = async (req, res, next) => {
       "songs/images"
     );
 
-    const songDuration = duration ? Number(duration) : 0;
+    // Automatic duration calculation from Cloudinary analysis, frontend detection, or audio header
+    let songDuration = 0;
+    if (audioUpload?.duration && !isNaN(Number(audioUpload.duration)) && Number(audioUpload.duration) > 0) {
+      songDuration = Math.round(Number(audioUpload.duration));
+    } else if (duration && !isNaN(Number(duration)) && Number(duration) > 0) {
+      songDuration = Math.round(Number(duration));
+    }
+
+    // WAV header probe fallback if duration is still 0
+    if (songDuration === 0 && audioFile.tempFilePath) {
+      try {
+        const fs = await import("fs");
+        const buffer = Buffer.alloc(44);
+        const fd = fs.openSync(audioFile.tempFilePath, "r");
+        fs.readSync(fd, buffer, 0, 44, 0);
+        fs.closeSync(fd);
+        if (buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WAVE") {
+          const byteRate = buffer.readUInt32LE(28);
+          const dataSize = buffer.readUInt32LE(40);
+          if (byteRate > 0 && dataSize > 0) {
+            songDuration = Math.round(dataSize / byteRate);
+          }
+        }
+      } catch (err) {
+        console.warn("WAV duration fallback check skipped:", err);
+      }
+    }
     
     let finalAlbumIds = [];
     if (albumIds) {

@@ -47,6 +47,7 @@ interface PlayerStore {
   queueOpen: boolean;
   lyricsOpen: boolean;
   audioSettingsOpen: boolean;
+  mobilePlayerOpen: boolean;
 
   initializeQueue: (songs: Song[]) => void;
   playSongs: (songs: Song[], startIndex?: number) => void;
@@ -82,6 +83,7 @@ interface PlayerStore {
   toggleLyrics: () => void;
   setLyricsOpen: (open: boolean) => void;
   setAudioSettingsOpen: (open: boolean) => void;
+  setMobilePlayerOpen: (open: boolean) => void;
 }
 
 const shuffleArray = <T,>(items: T[]): T[] => {
@@ -137,6 +139,7 @@ const initialState = {
   queueOpen: false,
   lyricsOpen: false,
   audioSettingsOpen: false,
+  mobilePlayerOpen: false,
 };
 
 // Track failed tracks in the current playback session to prevent infinite loops
@@ -615,6 +618,7 @@ export const usePlayerStore = create<PlayerStore>()(
       toggleLyrics: () => set((s) => ({ lyricsOpen: !s.lyricsOpen })),
       setLyricsOpen: (open: boolean) => set({ lyricsOpen: open }),
       setAudioSettingsOpen: (open: boolean) => set({ audioSettingsOpen: open }),
+      setMobilePlayerOpen: (open: boolean) => set({ mobilePlayerOpen: open }),
     }),
     {
       name: "soundwave-player-settings",

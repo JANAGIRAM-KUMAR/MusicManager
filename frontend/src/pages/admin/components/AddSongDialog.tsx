@@ -12,27 +12,107 @@ import {
 import { Input } from "@/components/ui/input";
 import axiosInstance from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { Loader2, Plus, Upload, X } from "lucide-react";
+import { Clock, Loader2, Plus, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-
+import { formatTime } from "@/lib/format";
 
 interface NewSong {
 	title: string;
 	artist: string;
-	duration: string;
 }
+
+// Multi-strategy audio duration extractor
+const getAudioDuration = async (file: File): Promise<number> => {
+	// Strategy 1: HTML5 Audio with loadedmetadata & Infinity check
+	try {
+		const objectUrl = URL.createObjectURL(file);
+		const audio = new Audio();
+		audio.preload = "metadata";
+		audio.src = objectUrl;
+
+		const duration = await new Promise<number>((resolve) => {
+			let isResolved = false;
+			const cleanup = () => {
+				if (isResolved) return;
+				isResolved = true;
+				audio.removeEventListener("loadedmetadata", onLoaded);
+				audio.removeEventListener("error", onError);
+				URL.revokeObjectURL(objectUrl);
+			};
+
+			const onLoaded = () => {
+				const d = audio.duration;
+				if (Number.isFinite(d) && d > 0) {
+					cleanup();
+					resolve(Math.round(d));
+				} else if (d === Infinity) {
+					// Chromium VBR fallback
+					audio.currentTime = 1e101;
+					audio.addEventListener(
+						"seeked",
+						() => {
+							const real = audio.duration;
+							cleanup();
+							resolve(Number.isFinite(real) && real > 0 ? Math.round(real) : 0);
+						},
+						{ once: true }
+					);
+				} else {
+					cleanup();
+					resolve(0);
+				}
+			};
+
+			const onError = () => {
+				cleanup();
+				resolve(0);
+			};
+
+			audio.addEventListener("loadedmetadata", onLoaded);
+			audio.addEventListener("error", onError);
+
+			setTimeout(() => {
+				cleanup();
+				resolve(0);
+			}, 3500);
+		});
+
+		if (duration > 0) return duration;
+	} catch (err) {
+		console.warn("HTML5 audio metadata extraction failed:", err);
+	}
+
+	// Strategy 2: Web Audio API decodeAudioData fallback
+	try {
+		const AudioCtx =
+			window.AudioContext ||
+			(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		if (AudioCtx) {
+			const ctx = new AudioCtx();
+			const buffer = await file.arrayBuffer();
+			const decoded = await ctx.decodeAudioData(buffer);
+			const duration = Math.round(decoded.duration || 0);
+			void ctx.close().catch(() => {});
+			if (duration > 0) return duration;
+		}
+	} catch (err) {
+		console.warn("Web Audio decodeAudioData extraction failed:", err);
+	}
+
+	return 0;
+};
 
 const AddSongDialog = () => {
 	const { albums, fetchSongs, fetchAlbums, fetchStats } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isExtracting, setIsExtracting] = useState(false);
+	const [detectedDuration, setDetectedDuration] = useState<number>(0);
 
 	const [newSong, setNewSong] = useState<NewSong>({
 		title: "",
 		artist: "",
-		duration: "0",
 	});
 
 	const [selectedAlbumIds, setSelectedAlbumIds] = useState<string[]>([]);
@@ -48,43 +128,30 @@ const AddSongDialog = () => {
 	const extractMetadata = async (audioFile: File) => {
 		setIsExtracting(true);
 		try {
-			// Try to extract duration using Audio API
-			const objectUrl = URL.createObjectURL(audioFile);
-			const audio = new Audio(objectUrl);
-			
-			const durationPromise = new Promise<number>((resolve) => {
-				audio.addEventListener('loadedmetadata', () => {
-					resolve(Math.round(audio.duration || 0));
-				});
-				audio.addEventListener('error', () => {
-					resolve(0);
-				});
-			});
-			
-			const duration = await durationPromise;
-			URL.revokeObjectURL(objectUrl);
-			
+			// Auto-extract exact duration using HTML5 Audio & Web Audio fallback
+			const duration = await getAudioDuration(audioFile);
+			setDetectedDuration(duration);
+
 			// Try to extract filename-based metadata
 			const fileName = audioFile.name.replace(/\.[^/.]+$/, ""); // Remove extension
 			let suggestedTitle = fileName;
 			let suggestedArtist = "";
-			
+
 			// Try to parse common patterns like "Artist - Title" or "Title"
 			if (fileName.includes(" - ")) {
 				const parts = fileName.split(" - ");
 				suggestedArtist = parts[0].trim();
 				suggestedTitle = parts.slice(1).join(" - ").trim();
 			}
-			
+
 			setNewSong((prev) => ({
 				...prev,
 				title: prev.title || suggestedTitle,
 				artist: prev.artist || suggestedArtist,
-				duration: duration > 0 ? duration.toString() : prev.duration,
 			}));
-			
+
 			if (duration > 0) {
-				toast.success(`Auto-detected duration: ${duration}s`);
+				toast.success(`Track duration auto-detected: ${formatTime(duration)}`);
 			}
 		} catch (error) {
 			console.error("Error extracting metadata:", error);
@@ -121,7 +188,7 @@ const AddSongDialog = () => {
 
 			formData.append("title", newSong.title.trim());
 			formData.append("artist", newSong.artist.trim());
-			formData.append("duration", newSong.duration);
+			formData.append("duration", detectedDuration > 0 ? detectedDuration.toString() : "0");
 			formData.append("albumIds", JSON.stringify(selectedAlbumIds));
 
 			formData.append("audioFile", files.audio);
@@ -133,8 +200,8 @@ const AddSongDialog = () => {
 			setNewSong({
 				title: "",
 				artist: "",
-				duration: "0",
 			});
+			setDetectedDuration(0);
 			setSelectedAlbumIds([]);
 
 			setFiles({
@@ -150,8 +217,9 @@ const AddSongDialog = () => {
 			
 			// Refresh data
 			await Promise.all([fetchSongs(), fetchAlbums(), fetchStats()]);
-		} catch (error: any) {
-			toast.error("Failed to add song: " + (error.response?.data?.message || error.message));
+		} catch (error: unknown) {
+			const err = error as { response?: { data?: { message?: string } }; message?: string };
+			toast.error("Failed to add song: " + (err.response?.data?.message || err.message || "Failed to add song"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -270,18 +338,36 @@ const AddSongDialog = () => {
 						/>
 					</div>
 
-					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Duration (seconds) *</label>
-						<Input
-							type='number'
-							min='0'
-							value={newSong.duration}
-							onChange={(e) => setNewSong({ ...newSong, duration: e.target.value || "0" })}
-							className='bg-zinc-800 border-zinc-700'
-							placeholder='Auto-detected from audio file'
-						/>
-						<p className='text-xs text-zinc-500'>You can edit this value if needed</p>
-					</div>
+					{/* Auto-detected Duration Display */}
+					{files.audio && (
+						<div className='flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/60'>
+							<div className='flex items-center gap-2.5'>
+								<Clock className='size-4 text-emerald-400' />
+								<div>
+									<p className='text-xs font-semibold text-white'>Audio Duration</p>
+									<p className='text-[11px] text-zinc-400'>
+										{isExtracting ? (
+											<span className='flex items-center gap-1.5 text-zinc-400'>
+												<Loader2 className='size-3 animate-spin text-emerald-400' />
+												Auto-detecting track duration...
+											</span>
+										) : detectedDuration > 0 ? (
+											<span className='text-emerald-400 font-mono font-medium'>
+												{formatTime(detectedDuration)} ({detectedDuration} seconds)
+											</span>
+										) : (
+											<span className='text-zinc-400'>
+												Will be measured automatically on upload
+											</span>
+										)}
+									</p>
+								</div>
+							</div>
+							<Badge variant='outline' className='text-[10px] uppercase font-mono border-zinc-600 text-zinc-300'>
+								Auto
+							</Badge>
+						</div>
+					)}
 
 					<div className='space-y-3'>
 						<label className='text-sm font-medium'>Albums (Optional - can select multiple)</label>
@@ -343,8 +429,8 @@ const AddSongDialog = () => {
 							setNewSong({
 								title: "",
 								artist: "",
-								duration: "0",
 							});
+							setDetectedDuration(0);
 							setSelectedAlbumIds([]);
 							setFiles({
 								audio: null,
