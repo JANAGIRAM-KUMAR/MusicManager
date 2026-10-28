@@ -4,6 +4,7 @@ import LeftSidebar from "./components/LeftSidebar";
 import { PlayerBar } from "./components/PlayerBar";
 import { QueuePanel } from "./components/QueuePanel";
 import { MobileNav } from "./components/MobileNav";
+import { LyricsPanel } from "@/components/lyrics/LyricsPanel";
 import Topbar from "@/components/Topbar";
 import { useLibraryStore } from "@/stores/useLibraryStore";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -96,6 +97,9 @@ const MainLayout = () => {
 
       {/* Mobile Bottom Navigation Bar (< lg screens) */}
       <MobileNav />
+
+      {/* Global Synchronized Karaoke Lyrics View */}
+      <LyricsPanel />
     </div>
   );
 };

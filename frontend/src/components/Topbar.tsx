@@ -56,14 +56,44 @@ const Topbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isHome = location.pathname === "/";
   const initialQuery =
     location.pathname === "/search"
       ? new URLSearchParams(location.search).get("q") ?? ""
       : "";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-2 bg-zinc-900/80 px-2 py-2 backdrop-blur-md sm:px-4 sm:py-3">
-      <div className="flex items-center gap-1">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-2 bg-zinc-900/80 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3 sm:justify-start">
+      {/* ---------------- MOBILE HOME SCREEN: Logo + Soundwave Name on Left ---------------- */}
+      {isHome ? (
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 text-white sm:hidden active:scale-95 transition"
+        >
+          <div className="grid size-8 place-items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-xs">
+            <AudioLines className="size-5 text-emerald-400" />
+          </div>
+          <span className="text-lg font-black tracking-tight text-white">Soundwave</span>
+        </Link>
+      ) : (
+        /* Mobile Non-Home Navigation: Back button + Mini Logo */
+        <div className="flex items-center gap-1.5 sm:hidden">
+          <button
+            type="button"
+            aria-label="Go back"
+            onClick={() => navigate(-1)}
+            className="grid size-8 place-items-center rounded-full bg-black/60 text-zinc-300 transition hover:text-white"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <Link to="/" className="flex items-center gap-2 text-white">
+            <AudioLines className="size-5 text-emerald-400" />
+          </Link>
+        </div>
+      )}
+
+      {/* ---------------- DESKTOP NAVIGATION CHEVRONS ---------------- */}
+      <div className="hidden sm:flex items-center gap-1">
         <button
           type="button"
           aria-label="Go back"
@@ -82,10 +112,7 @@ const Topbar = () => {
         </button>
       </div>
 
-      <Link to="/" className="flex items-center gap-2 text-white md:hidden">
-        <AudioLines className="size-5 text-emerald-400" />
-      </Link>
-
+      {/* ---------------- DESKTOP SEARCH BOX ---------------- */}
       {location.pathname !== "/search" ? (
         <div className="flex-1 min-w-0 mx-1 hidden sm:block">
           <SearchBox
@@ -94,9 +121,13 @@ const Topbar = () => {
           />
         </div>
       ) : (
-        <div className="flex-1 min-w-0 mx-1" />
+        <div className="flex-1 min-w-0 mx-1 hidden sm:block" />
       )}
 
+      {/* Spacer for mobile to push right controls to far right */}
+      <div className="flex-1 sm:hidden" />
+
+      {/* ---------------- RIGHT SIDE: Admin & User Profile / Sign In ---------------- */}
       <div className="flex items-center gap-2">
         {isAdmin && (
           <Link
@@ -115,7 +146,7 @@ const Topbar = () => {
           <UserMenu />
         ) : (
           <SignInButton>
-            <Button size="sm" className="rounded-full bg-white text-black hover:bg-zinc-200">
+            <Button size="sm" className="rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold px-3.5 h-8">
               Sign in
             </Button>
           </SignInButton>

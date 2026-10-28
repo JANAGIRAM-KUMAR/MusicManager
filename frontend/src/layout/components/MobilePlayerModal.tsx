@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, SlidersHorizontal, ListMusic } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { LikeButton } from "@/components/LikeButton";
-import { LyricsPanel } from "@/components/lyrics/LyricsPanel";
+import { LyricsPreviewCard } from "@/components/lyrics/LyricsPreviewCard";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,9 +41,9 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
   const setCrossfade = usePlayerStore((state) => state.setCrossfade);
   const setEq = usePlayerStore((state) => state.setEq);
   const toggleQueue = usePlayerStore((state) => state.toggleQueue);
+  const setLyricsOpen = usePlayerStore((state) => state.setLyricsOpen);
 
   const [scrub, setScrub] = useState<number | null>(null);
-  const [lyricsOpen, setLyricsOpen] = useState(false);
   const [eqOpen, setEqOpen] = useState(false);
 
   if (!open || !currentSong) return null;
@@ -187,12 +187,25 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
           </button>
         </div>
 
+        {/* Live Lyrics Preview Card (Spotify Mobile Experience) */}
+        <div className="pt-2 pb-4">
+          <LyricsPreviewCard
+            onExpand={() => {
+              onClose();
+              setLyricsOpen(true);
+            }}
+          />
+        </div>
+
         {/* Footer Actions: Lyrics & Settings */}
         <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80">
           <button
             type="button"
-            onClick={() => setLyricsOpen(true)}
-            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-3 py-2 rounded-full bg-white/5"
+            onClick={() => {
+              onClose();
+              setLyricsOpen(true);
+            }}
+            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-3 py-2 rounded-full bg-white/5 active:scale-95 transition"
           >
             <Mic2 className="size-4 text-emerald-400" />
             <span>Lyrics</span>
@@ -208,9 +221,6 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
           </button>
         </div>
       </div>
-
-      {/* Lyrics Full Modal */}
-      <LyricsPanel open={lyricsOpen} onClose={() => setLyricsOpen(false)} />
 
       {/* Audio FX Dialog */}
       <Dialog open={eqOpen} onOpenChange={setEqOpen}>

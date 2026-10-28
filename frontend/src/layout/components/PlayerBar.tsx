@@ -17,7 +17,6 @@ import {
 import { CoverImage } from "@/components/CoverImage";
 import { LikeButton } from "@/components/LikeButton";
 import { Visualizer } from "@/components/Visualizer";
-import { LyricsPanel } from "@/components/lyrics/LyricsPanel";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -68,7 +67,9 @@ export const PlayerBar = () => {
 
   const [scrub, setScrub] = useState<number | null>(null);
   const [volumeScrub, setVolumeScrub] = useState<number | null>(null);
-  const [lyricsOpen, setLyricsOpen] = useState(false);
+  const lyricsOpen = usePlayerStore((state) => state.lyricsOpen);
+  const toggleLyrics = usePlayerStore((state) => state.toggleLyrics);
+  const setLyricsOpen = usePlayerStore((state) => state.setLyricsOpen);
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
 
   const currentSongId = currentSong?._id;
@@ -147,6 +148,14 @@ export const PlayerBar = () => {
               className="flex items-center gap-1 shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
+              <button
+                type="button"
+                onClick={() => setLyricsOpen(true)}
+                className="size-8 grid place-items-center rounded-full text-zinc-400 hover:text-white active:scale-90 transition"
+                aria-label="Open lyrics"
+              >
+                <Mic2 className="size-4 text-emerald-400" />
+              </button>
               <LikeButton song={currentSong} className="size-8 grid place-items-center" />
               <button
                 type="button"
@@ -364,9 +373,13 @@ export const PlayerBar = () => {
           <button
             type="button"
             aria-label="Lyrics"
-            onClick={() => setLyricsOpen(true)}
+            aria-pressed={lyricsOpen}
+            onClick={toggleLyrics}
             disabled={!currentSong}
-            className="text-zinc-400 transition hover:text-white disabled:opacity-40"
+            className={cn(
+              "text-zinc-400 transition hover:text-white disabled:opacity-40",
+              lyricsOpen && "text-emerald-400 hover:text-emerald-300"
+            )}
           >
             <Mic2 className="size-4" />
           </button>
@@ -406,8 +419,6 @@ export const PlayerBar = () => {
             className="w-24 [&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:border-white [&_[data-slot=slider-track]]:bg-zinc-700"
           />
         </div>
-
-        <LyricsPanel open={lyricsOpen} onClose={() => setLyricsOpen(false)} />
       </footer>
 
       {/* Mobile Fullscreen Modal */}

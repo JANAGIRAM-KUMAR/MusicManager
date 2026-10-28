@@ -25,6 +25,7 @@ interface PlayerStore {
   eq: EqSettings;
   graphMode: "webaudio" | "element";
   queueOpen: boolean;
+  lyricsOpen: boolean;
 
   initializeQueue: (songs: Song[]) => void;
   playSongs: (songs: Song[], startIndex?: number) => void;
@@ -49,6 +50,8 @@ interface PlayerStore {
   setEq: (eq: EqSettings) => void;
   toggleQueue: () => void;
   setQueueOpen: (open: boolean) => void;
+  toggleLyrics: () => void;
+  setLyricsOpen: (open: boolean) => void;
 }
 
 const shuffleArray = <T,>(items: T[]): T[] => {
@@ -98,6 +101,7 @@ const initialState = {
   eq: { bass: 0, mid: 0, treble: 0 } as EqSettings,
   graphMode: "webaudio" as const,
   queueOpen: false,
+  lyricsOpen: false,
 };
 
 // Track failed tracks in the current playback session to prevent infinite loops
@@ -507,6 +511,8 @@ export const usePlayerStore = create<PlayerStore>()(
 
       toggleQueue: () => set((s) => ({ queueOpen: !s.queueOpen })),
       setQueueOpen: (open: boolean) => set({ queueOpen: open }),
+      toggleLyrics: () => set((s) => ({ lyricsOpen: !s.lyricsOpen })),
+      setLyricsOpen: (open: boolean) => set({ lyricsOpen: open }),
     }),
     {
       name: "soundwave-player-settings",
