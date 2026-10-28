@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import {
   createSong,
   deleteSong,
@@ -14,26 +14,28 @@ import {
 } from '../controllers/admin-controller.js';
 import { getAllUsersAdmin, deleteUser } from '../controllers/admin-users-controller.js';
 import { protectRoute, isAdminUser } from '../middleware/auth-middleware.js';
+import { validateObjectId, uploadRateLimiter } from '../middleware/security.js';
+
 const router = Router();
 
-// optimized code for middleware
+// Protect all admin routes
 router.use(protectRoute, isAdminUser);
 
 router.get('/check', checkAdmin);
 router.get('/users', getAllUsersAdmin);
-router.delete('/users/:id', deleteUser);
+router.delete('/users/:id', validateObjectId('id'), deleteUser);
 
-router.post('/songs', createSong);
-router.put('/songs/:id', updateSong);
-router.delete('/songs/:id', deleteSong);
+router.post('/songs', uploadRateLimiter, createSong);
+router.put('/songs/:id', validateObjectId('id'), updateSong);
+router.delete('/songs/:id', validateObjectId('id'), deleteSong);
 
-router.post('/albums', createAlbum);
-router.put('/albums/:id', updateAlbum);
-router.delete('/albums/:id', deleteAlbum);
-router.post('/albums/:id/songs', addSongsToAlbum);
-router.delete('/albums/:id/songs/:songId', removeSongFromAlbum);
+router.post('/albums', uploadRateLimiter, createAlbum);
+router.put('/albums/:id', validateObjectId('id'), updateAlbum);
+router.delete('/albums/:id', validateObjectId('id'), deleteAlbum);
+router.post('/albums/:id/songs', validateObjectId('id'), addSongsToAlbum);
+router.delete('/albums/:id/songs/:songId', validateObjectId('id', 'songId'), removeSongFromAlbum);
 
 router.get('/playlists', getAllPlaylistsAdmin);
-router.delete('/playlists/:id', deletePlaylistAdmin);
+router.delete('/playlists/:id', validateObjectId('id'), deletePlaylistAdmin);
 
 export default router;

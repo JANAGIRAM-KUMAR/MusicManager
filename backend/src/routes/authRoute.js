@@ -8,12 +8,13 @@ import {
   register,
 } from "../controllers/auth-controller.js";
 import { optionalAuth } from "../middleware/auth-middleware.js";
+import { authRateLimiter } from "../middleware/security.js";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/google", googleLogin);
+router.post("/register", authRateLimiter, register);
+router.post("/login", authRateLimiter, login);
+router.post("/google", authRateLimiter, googleLogin);
 router.get("/callback", oauthCallback);
 router.get("/me", optionalAuth, getSession);
 router.post("/logout", logout);

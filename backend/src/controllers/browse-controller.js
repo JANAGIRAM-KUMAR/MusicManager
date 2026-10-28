@@ -26,7 +26,7 @@ const artistPipeline = (match) => [
 
 const search = async (req, res, next) => {
   try {
-    const query = (req.query.q || "").toString().trim();
+    const query = (req.query.q || "").toString().trim().slice(0, 100);
     if (!query) {
       return res.status(200).json({ query, songs: [], albums: [], artists: [] });
     }
@@ -69,7 +69,10 @@ const getArtists = async (req, res, next) => {
 
 const getArtistByName = async (req, res, next) => {
   try {
-    const name = req.params.artistName;
+    const name = (req.params.artistName || "").toString().trim().slice(0, 100);
+    if (!name) {
+      return res.status(400).json({ success: false, message: "Artist name is required" });
+    }
     const regex = new RegExp(`^${escapeRegex(name)}$`, "i");
 
     const [songs, albums] = await Promise.all([

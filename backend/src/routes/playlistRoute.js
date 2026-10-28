@@ -10,18 +10,24 @@ import {
   removeSongFromPlaylist,
   reorderPlaylist,
 } from "../controllers/playlist-controller.js";
+import { validateObjectId } from "../middleware/security.js";
 
 const router = Router();
 
 router.get("/", protectRoute, getMyPlaylists);
 router.post("/", protectRoute, createPlaylist);
 
-router.get("/:playlistId", protectRoute, getPlaylistById);
-router.patch("/:playlistId", protectRoute, updatePlaylist);
-router.delete("/:playlistId", protectRoute, deletePlaylist);
+router.get("/:playlistId", protectRoute, validateObjectId("playlistId"), getPlaylistById);
+router.patch("/:playlistId", protectRoute, validateObjectId("playlistId"), updatePlaylist);
+router.delete("/:playlistId", protectRoute, validateObjectId("playlistId"), deletePlaylist);
 
-router.post("/:playlistId/songs", protectRoute, addSongToPlaylist);
-router.delete("/:playlistId/songs/:songId", protectRoute, removeSongFromPlaylist);
-router.put("/:playlistId/reorder", protectRoute, reorderPlaylist);
+router.post("/:playlistId/songs", protectRoute, validateObjectId("playlistId"), addSongToPlaylist);
+router.delete(
+  "/:playlistId/songs/:songId",
+  protectRoute,
+  validateObjectId("playlistId", "songId"),
+  removeSongFromPlaylist
+);
+router.put("/:playlistId/reorder", protectRoute, validateObjectId("playlistId"), reorderPlaylist);
 
 export default router;

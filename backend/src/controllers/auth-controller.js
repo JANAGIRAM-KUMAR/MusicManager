@@ -33,6 +33,8 @@ const isAdmin = (user) => {
   return Boolean(email && adminEmails().includes(email));
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const googleLogin = async (req, res, next) => {
   try {
     const credential = req.body?.credential ?? req.body?.idToken;
@@ -45,10 +47,10 @@ const googleLogin = async (req, res, next) => {
       });
     }
 
-    if (!credential || typeof credential !== "string") {
+    if (!credential || typeof credential !== "string" || credential.length > 4096) {
       return res.status(400).json({
         success: false,
-        message: "A Google credential is required",
+        message: "A valid Google credential is required",
       });
     }
 
@@ -126,8 +128,17 @@ const register = async (req, res, next) => {
     if (!fullName || !email || !password) {
       return res.status(400).json({ success: false, message: "Full name, email and password are required" });
     }
+    if (fullName.length > 100) {
+      return res.status(400).json({ success: false, message: "Full name cannot exceed 100 characters" });
+    }
+    if (!EMAIL_REGEX.test(email) || email.length > 254) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address" });
+    }
     if (password.length < 6) {
       return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+    }
+    if (password.length > 128) {
+      return res.status(400).json({ success: false, message: "Password cannot exceed 128 characters" });
     }
 
     const existing = await User.findOne({ email });
@@ -172,6 +183,9 @@ const login = async (req, res, next) => {
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required" });
+    }
+    if (email.length > 254 || password.length > 128) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
     const user = await User.findOne({ email }).select("+password");

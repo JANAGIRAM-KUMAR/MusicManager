@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import PlayHistory from "../models/PlayHistory.js";
 
 const MAX_HISTORY_PER_USER = 300;
@@ -5,8 +6,8 @@ const MAX_HISTORY_PER_USER = 300;
 const recordPlay = async (req, res, next) => {
   try {
     const { songId } = req.body;
-    if (!songId) {
-      return res.status(400).json({ success: false, message: "songId is required" });
+    if (!songId || !mongoose.Types.ObjectId.isValid(songId)) {
+      return res.status(400).json({ success: false, message: "Valid songId is required" });
     }
 
     await PlayHistory.create({ userId: req.userId, songId });

@@ -1,8 +1,16 @@
+import fs from "fs";
 import Song from "../models/Song.js";
 import Album from "../models/Album.js";
 import Playlist from "../models/Playlist.js";
 import Like from "../models/Like.js";
 import cloudinary from '../lib/cloudinary.js';
+import { validateAudioFile, validateImageFile } from "../middleware/security.js";
+
+const unlinkQuietly = (filePath) => {
+  if (filePath) {
+    fs.unlink(filePath, () => {});
+  }
+};
 
 // helper function to upload files to cloudinary
 const uploadToCloudinary = async (filePath, folder) => {
@@ -23,23 +31,41 @@ const uploadToCloudinary = async (filePath, folder) => {
 };
 
 const createSong = async (req, res, next) => {
+  const audioFile = req.files?.audioFile;
+  const imageFile = req.files?.imageFile;
+
   try {
-    if (!req.files?.audioFile || !req.files?.imageFile) {
+    if (!audioFile || !imageFile) {
+      unlinkQuietly(audioFile?.tempFilePath);
+      unlinkQuietly(imageFile?.tempFilePath);
       return res.status(400).json({
         message: "Please upload both audio and image files",
       });
     }
 
+    const audioCheck = validateAudioFile(audioFile);
+    if (!audioCheck.valid) {
+      unlinkQuietly(audioFile.tempFilePath);
+      unlinkQuietly(imageFile.tempFilePath);
+      return res.status(400).json({ success: false, message: audioCheck.error });
+    }
+
+    const imageCheck = validateImageFile(imageFile);
+    if (!imageCheck.valid) {
+      unlinkQuietly(audioFile.tempFilePath);
+      unlinkQuietly(imageFile.tempFilePath);
+      return res.status(400).json({ success: false, message: imageCheck.error });
+    }
+
     const { title, artist, albumId, albumIds, duration } = req.body;
 
     if (!title || !artist) {
+      unlinkQuietly(audioFile.tempFilePath);
+      unlinkQuietly(imageFile.tempFilePath);
       return res.status(400).json({
         message: "Title and artist are required",
       });
     }
-
-    const audioFile = req.files.audioFile;
-    const imageFile = req.files.imageFile;
 
     const audioUpload = await uploadToCloudinary(
       audioFile.tempFilePath,
@@ -62,7 +88,6 @@ const createSong = async (req, res, next) => {
     // WAV header probe fallback if duration is still 0
     if (songDuration === 0 && audioFile.tempFilePath) {
       try {
-        const fs = await import("fs");
         const buffer = Buffer.alloc(44);
         const fd = fs.openSync(audioFile.tempFilePath, "r");
         fs.readSync(fd, buffer, 0, 44, 0);
@@ -120,6 +145,9 @@ const createSong = async (req, res, next) => {
   } catch (error) {
     console.error("Error in create song controller:", error);
     next(error);
+  } finally {
+    unlinkQuietly(audioFile?.tempFilePath);
+    unlinkQuietly(imageFile?.tempFilePath);
   }
 };
 
@@ -205,20 +233,25 @@ const updateSong = async (req, res, next) => {
 }
 
 const createAlbum = async (req, res, next) => {
+  const imageFile = req.files?.imageFile;
+
   try {
-    if (!req.files?.imageFile) {
+    if (!imageFile) {
       return res.status(400).json({ message: "Album image is required" });
+    }
+
+    const imageCheck = validateImageFile(imageFile);
+    if (!imageCheck.valid) {
+      unlinkQuietly(imageFile.tempFilePath);
+      return res.status(400).json({ success: false, message: imageCheck.error });
     }
 
     const { title, artist, releaseDate } = req.body;
 
     if (!releaseDate) {
+      unlinkQuietly(imageFile.tempFilePath);
       return res.status(400).json({ message: "releaseDate is required" });
     }
-
-    const imageFile = req.files.imageFile;
-
-    console.log("IMAGE PATH:", imageFile.tempFilePath);
 
     const imageUpload = await uploadToCloudinary(
       imageFile.tempFilePath,
@@ -240,6 +273,8 @@ const createAlbum = async (req, res, next) => {
   } catch (error) {
     console.log("Error in creating Album", error);
     next(error);
+  } finally {
+    unlinkQuietly(imageFile?.tempFilePath);
   }
 };
 
@@ -275,21 +310,32 @@ const deleteAlbum = async (req, res, next) => {
 }
 
 const updateAlbum = async (req, res, next) => {
+  const imageFile = req.files?.imageFile;
+
   try {
     const { id } = req.params;
     const { title, artist, releaseDate } = req.body;
     const album = await Album.findById(id);
     if (!album) {
+      unlinkQuietly(imageFile?.tempFilePath);
       return res.status(404).json({ success: false, message: 'Album not found' });
+    }
+
+    if (imageFile) {
+      const imageCheck = validateImageFile(imageFile);
+      if (!imageCheck.valid) {
+        unlinkQuietly(imageFile.tempFilePath);
+        return res.status(400).json({ success: false, message: imageCheck.error });
+      }
     }
 
     if (title) album.title = title.trim();
     if (artist) album.artist = artist.trim();
     if (releaseDate) album.releaseDate = releaseDate.trim();
 
-    if (req.files?.imageFile) {
+    if (imageFile) {
       const imageUpload = await uploadToCloudinary(
-        req.files.imageFile.tempFilePath,
+        imageFile.tempFilePath,
         "albums/images"
       );
       album.imageUrl = imageUpload.secure_url;
@@ -306,6 +352,8 @@ const updateAlbum = async (req, res, next) => {
   } catch (error) {
     console.log("Error in updating album:", error);
     next(error);
+  } finally {
+    unlinkQuietly(imageFile?.tempFilePath);
   }
 };
 

@@ -2,9 +2,9 @@ import User from "../models/User.js";
 
 const getAllUsers = async (req, res, next) => {
     try{
-
       const currentUserId = req.userId;
-      const users = await User.find({_id: {$ne: currentUserId}}); // getting all users except the current user
+      // Project only non-sensitive public profile fields, avoiding PII leakage
+      const users = await User.find({_id: {$ne: currentUserId}}).select("_id fullName imageUrl");
       res.status(200).json(users);
     }
     catch(error){

@@ -24,14 +24,19 @@ const httpsGet = (url) => {
 
 export const getLyrics = async (req, res) => {
   try {
-    const artist = encodeURIComponent(req.query.artist || "");
-    const track = encodeURIComponent(req.query.track || "");
-    const album = encodeURIComponent(req.query.album || "");
-    const duration = req.query.duration;
+    const rawArtist = (req.query.artist || "").toString().trim().slice(0, 150);
+    const rawTrack = (req.query.track || "").toString().trim().slice(0, 150);
+    const rawAlbum = (req.query.album || "").toString().trim().slice(0, 150);
+    const rawDuration = req.query.duration ? parseInt(String(req.query.duration), 10) : null;
+    const duration = !isNaN(rawDuration) && rawDuration > 0 ? rawDuration : null;
 
-    if (!artist || !track) {
+    if (!rawArtist || !rawTrack) {
       return res.status(400).json({ success: false, message: "artist and track are required" });
     }
+
+    const artist = encodeURIComponent(rawArtist);
+    const track = encodeURIComponent(rawTrack);
+    const album = encodeURIComponent(rawAlbum);
 
     // Try lrclib get by track/artist/duration
     const tryGet = async (a, t, d) => {
