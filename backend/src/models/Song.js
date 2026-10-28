@@ -25,7 +25,11 @@ const songSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Album',
         required: false
-    }
+    },
+    albumIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Album'
+    }]
 }, {timestamps: true});
 
 const Song = mongoose.model('Song', songSchema);

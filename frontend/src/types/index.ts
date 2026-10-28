@@ -2,6 +2,7 @@ export interface Song {
     _id: string;
     title: string;
     albumId: string | null;
+    albumIds?: string[];
     artist: string;
     imageUrl: string;
     songUrl: string;
@@ -59,7 +60,18 @@ export interface Stats {
     totalSongs: number;
     totalAlbums: number;
     totalUsers: number;
-    totalArtists: number
+    totalArtists: number;
+    totalPlaylists?: number;
+    totalPlays?: number;
+    totalLikes?: number;
+    recentUsers?: User[];
+    topSongs?: Array<{
+        _id: string;
+        title: string;
+        artist: string;
+        imageUrl: string;
+        plays: number;
+    }>;
 }
 
 export interface Message {
@@ -73,11 +85,16 @@ export interface Message {
 
 export interface User {
     _id: string;
-    googleId: string;
+    googleId?: string;
     email: string;
     fullName: string;
     imageUrl: string;
+    authProvider?: string;
     createdAt?: string;
+    isAdmin?: boolean;
+    playlistCount?: number;
+    likesCount?: number;
+    playsCount?: number;
 }
 
 export type RepeatMode = "off" | "all" | "one";

@@ -55,6 +55,7 @@ const AddAlbumDialog = () => {
 				releaseDate: new Date().getFullYear(),
 			});
 			setImageFile(null);
+			if (fileInputRef.current) fileInputRef.current.value = "";
 			setAlbumDialogOpen(false);
 			toast.success("Album created successfully");
 		} catch (error) {
