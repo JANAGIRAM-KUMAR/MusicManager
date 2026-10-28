@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { SignInButton } from "@/components/SignInButton";
-import { Button } from "@/components/ui/button";
 import { CoverImage } from "@/components/CoverImage";
 import { MediaCard } from "@/components/MediaCard";
 import { SectionRow } from "@/components/SectionRow";
@@ -80,7 +78,7 @@ const HomePage = () => {
     ));
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-emerald-500/15 via-white/[0.01] to-transparent pb-16">
+    <div className="min-h-full bg-gradient-to-b from-emerald-500/15 via-white/[0.01] to-transparent pb-6 sm:pb-0">
       <div className="px-3 pt-4 sm:px-6 sm:pt-6">
         {/* Category Pills (Spotify Mobile & Desktop standard) */}
         <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -101,23 +99,14 @@ const HomePage = () => {
         </div>
 
         {/* Welcome Greeting */}
-        <div className="mb-5 sm:mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-              {greeting()}
-            </h1>
-            {!isSignedIn && (
-              <p className="mt-1 max-w-xl text-xs sm:text-sm text-zinc-400">
-                Browse our music catalog and start streaming. Sign in to save tracks and build your personal playlists.
-              </p>
-            )}
-          </div>
+        <div className="mb-5 sm:mb-6">
+          <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+            {greeting()}
+          </h1>
           {!isSignedIn && (
-            <SignInButton>
-              <Button size="sm" className="rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold px-4 shadow-md">
-                Sign in
-              </Button>
-            </SignInButton>
+            <p className="mt-1 max-w-xl text-xs sm:text-sm text-zinc-400">
+              Browse our music catalog and start streaming. Sign in to save tracks and build your personal playlists.
+            </p>
           )}
         </div>
 

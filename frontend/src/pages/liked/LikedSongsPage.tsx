@@ -48,7 +48,7 @@ const LikedSongsPage = () => {
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-indigo-500/25 via-transparent to-transparent pb-16">
+    <div className="min-h-full bg-gradient-to-b from-indigo-500/25 via-transparent to-transparent pb-6 sm:pb-0">
       <header className="flex flex-col items-center gap-6 p-6 text-center sm:flex-row sm:items-end sm:text-left">
         <div className="grid size-44 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-400 shadow-2xl border border-white/10 sm:size-52">
           <Heart className="size-16 fill-white text-white drop-shadow-md" />

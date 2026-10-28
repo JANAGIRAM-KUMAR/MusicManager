@@ -138,7 +138,7 @@ const PlaylistPage = () => {
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-purple-600/20 via-transparent to-transparent pb-16">
+    <div className="min-h-full bg-gradient-to-b from-purple-600/20 via-transparent to-transparent pb-6 sm:pb-0">
       <header className="flex flex-col items-center gap-6 p-6 text-center sm:flex-row sm:items-end sm:text-left">
         <CoverImage
           src={playlist.imageUrl}

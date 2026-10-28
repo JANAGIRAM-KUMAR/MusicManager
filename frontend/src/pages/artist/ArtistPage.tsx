@@ -68,7 +68,7 @@ const ArtistPage = () => {
   const artistPlaying = songs.some((song) => song._id === currentSong?._id);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-teal-600/20 via-transparent to-transparent pb-16">
+    <div className="min-h-full bg-gradient-to-b from-teal-600/20 via-transparent to-transparent pb-6 sm:pb-0">
       <header className="relative flex min-h-[280px] flex-col items-center justify-end gap-6 overflow-hidden p-6 text-center sm:flex-row sm:items-end sm:text-left">
         <CoverImage
           src={artist.imageUrl}

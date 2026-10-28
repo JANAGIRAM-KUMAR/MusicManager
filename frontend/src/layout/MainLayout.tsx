@@ -75,7 +75,7 @@ const MainLayout = () => {
         {/* Central Viewport */}
         <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-none sm:rounded-2xl glass-panel shadow-2xl">
           <Topbar />
-          <div className="min-h-0 flex-1 overflow-y-auto pb-36 sm:pb-6">
+          <div className={`min-h-0 flex-1 overflow-y-auto ${currentSong ? 'pb-40' : 'pb-24'} lg:pb-6 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}>
             <Outlet />
           </div>
         </main>
@@ -89,15 +89,15 @@ const MainLayout = () => {
               className="fixed inset-0 z-40 cursor-default bg-black/60 lg:hidden backdrop-blur-sm"
               onClick={() => setQueueOpen(false)}
             />
-            <aside className="fixed inset-x-2 bottom-[130px] top-4 z-40 sm:inset-auto sm:top-2 sm:right-2 sm:bottom-[96px] sm:w-[340px] lg:static lg:z-auto lg:w-[360px] lg:shrink-0 lg:bottom-auto rounded-2xl overflow-hidden glass-panel">
+            <aside className="fixed inset-x-2 bottom-[148px] top-4 z-40 sm:inset-auto sm:top-2 sm:right-2 sm:bottom-[96px] sm:w-[340px] lg:static lg:z-auto lg:w-[360px] lg:shrink-0 lg:bottom-auto rounded-2xl overflow-hidden glass-panel">
               <QueuePanel />
             </aside>
           </>
         )}
       </div>
 
-      {/* Player Bar Container: Fixed floating on mobile, standard bottom dock on tablet/desktop */}
-      <div className={`fixed sm:static ${currentSong ? 'bottom-[74px] sm:bottom-auto' : 'hidden sm:block'} inset-x-3 sm:inset-auto z-30 sm:z-auto px-0`}>
+      {/* Player Bar Container: Desktop dock on large screens + global listeners & modal */}
+      <div className="shrink-0 px-0">
         <PlayerBar />
       </div>
 

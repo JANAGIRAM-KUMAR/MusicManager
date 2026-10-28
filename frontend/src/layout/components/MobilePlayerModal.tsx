@@ -54,7 +54,7 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
   const displayProgress = scrub ?? progress;
 
   return (
-    <div className="fixed inset-0 z-[75] flex flex-col glass-dock backdrop-blur-3xl bg-[#08090d]/95 p-4 sm:p-6 pb-4 sm:pb-6 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-0 z-[75] flex flex-col glass-dock backdrop-blur-3xl bg-[#08090d]/95 p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] pt-[max(1rem,env(safe-area-inset-top,1rem))] text-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
       {/* Dynamic ambient orb behind album */}
       <div className="pointer-events-none fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 size-72 rounded-full bg-emerald-500/20 blur-[100px]" />
 

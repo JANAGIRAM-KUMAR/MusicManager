@@ -192,7 +192,7 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-white/[0.02] via-transparent to-transparent pb-24 text-white">
+    <div className="min-h-full bg-gradient-to-b from-white/[0.02] via-transparent to-transparent pb-6 sm:pb-0 text-white">
       {/* Sticky Hero Search Bar */}
       <div className="sticky top-0 z-20 glass-thin backdrop-blur-2xl border-b border-white/10 px-4 py-3.5 sm:px-6">
         <div className="mx-auto max-w-4xl space-y-3">

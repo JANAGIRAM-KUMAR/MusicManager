@@ -67,7 +67,7 @@ const LibraryPage = () => {
   const listPlaying = source.some((song) => song._id === currentSong?._id);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-white/[0.02] via-transparent to-transparent pb-16">
+    <div className="min-h-full bg-gradient-to-b from-white/[0.02] via-transparent to-transparent pb-6 sm:pb-0">
       <div className="px-4 pt-5 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Your Library</h1>
