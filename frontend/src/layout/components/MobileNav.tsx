@@ -7,6 +7,19 @@ export const MobileNav = () => {
   const location = useLocation();
   const isAdmin = useAuthStore((state) => state.isAdmin);
 
+  const handleNavClick = () => {
+    // Immediately close any open modal/dialogs and clear lingering backdrops or locks
+    window.dispatchEvent(new CustomEvent("spotify:close-all-dialogs"));
+    if (typeof document !== "undefined") {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true })
+      );
+      document.body.style.pointerEvents = "";
+      document.body.style.overflow = "";
+      document.body.removeAttribute("data-scroll-locked");
+    }
+  };
+
   const navItems = [
     {
       label: "Home",
@@ -24,7 +37,10 @@ export const MobileNav = () => {
       label: "Your Library",
       to: "/library",
       icon: Library,
-      isActive: location.pathname.startsWith("/library") || location.pathname.startsWith("/liked") || location.pathname.startsWith("/playlist"),
+      isActive:
+        location.pathname.startsWith("/library") ||
+        location.pathname.startsWith("/liked") ||
+        location.pathname.startsWith("/playlist"),
     },
     ...(isAdmin
       ? [
@@ -41,7 +57,7 @@ export const MobileNav = () => {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="fixed inset-x-0 bottom-0 z-30 lg:hidden bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-4 py-2 flex items-center justify-around"
+      className="fixed inset-x-0 bottom-0 z-[60] lg:hidden bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-4 py-2 flex items-center justify-around select-none"
     >
       {navItems.map((item) => {
         const Icon = item.icon;
@@ -49,8 +65,10 @@ export const MobileNav = () => {
           <Link
             key={item.to}
             to={item.to}
+            onClick={handleNavClick}
+            onTouchStart={handleNavClick}
             className={cn(
-              "flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors min-w-[64px]",
+              "flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors min-w-[64px] active:scale-95 touch-manipulation",
               item.isActive
                 ? "text-emerald-400 font-semibold"
                 : "text-zinc-400 hover:text-zinc-200"

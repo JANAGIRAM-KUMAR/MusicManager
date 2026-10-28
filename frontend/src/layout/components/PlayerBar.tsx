@@ -286,7 +286,7 @@ export const PlayerBar = () => {
 
         {/* Right: Audio FX, Lyrics, Queue, Volume */}
         <div className="flex flex-1 items-center justify-end gap-2.5 sm:w-[30%] sm:flex-none">
-          <Visualizer className="hidden h-7 w-16 lg:block" />
+          <Visualizer className="hidden h-7 w-16 sm:block" />
           <Dialog>
             <DialogTrigger asChild>
               <Button

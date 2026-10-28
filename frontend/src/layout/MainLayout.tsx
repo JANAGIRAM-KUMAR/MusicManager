@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import LeftSidebar from "./components/LeftSidebar";
 import { PlayerBar } from "./components/PlayerBar";
 import { QueuePanel } from "./components/QueuePanel";
@@ -9,6 +9,8 @@ import { useLibraryStore } from "@/stores/useLibraryStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
+import { audioEngine } from "@/lib/audioEngine";
+
 const MainLayout = () => {
   const user = useAuthStore((state) => state.user);
   const isSignedIn = Boolean(user);
@@ -17,6 +19,33 @@ const MainLayout = () => {
   const currentSong = usePlayerStore((state) => state.currentSong);
   const fetchLibrary = useLibraryStore((state) => state.fetchLibrary);
   const resetLibrary = useLibraryStore((state) => state.reset);
+
+  const location = useLocation();
+
+  // Safari/iOS user interaction unlock
+  useEffect(() => {
+    const unlock = () => {
+      audioEngine.unlock();
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+    window.addEventListener("click", unlock, { passive: true });
+    window.addEventListener("touchstart", unlock, { passive: true });
+    return () => {
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+  }, []);
+
+  // Cleanup dialogs, overlays, and body scroll locks whenever route changes
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("spotify:close-all-dialogs"));
+    if (typeof document !== "undefined") {
+      document.body.style.pointerEvents = "";
+      document.body.style.overflow = "";
+      document.body.removeAttribute("data-scroll-locked");
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (isSignedIn) {

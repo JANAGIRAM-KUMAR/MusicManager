@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SignInButton } from "@/components/SignInButton";
 import { ListMusic, Plus } from "lucide-react";
 import {
@@ -31,6 +31,14 @@ export const PlaylistPickerDialog = ({
   const addSongToPlaylist = useLibraryStore((state) => state.addSongToPlaylist);
   const createPlaylist = useLibraryStore((state) => state.createPlaylist);
   const [title, setTitle] = useState("");
+
+  useEffect(() => {
+    const handleClose = () => {
+      if (open) onOpenChange(false);
+    };
+    window.addEventListener("spotify:close-all-dialogs", handleClose);
+    return () => window.removeEventListener("spotify:close-all-dialogs", handleClose);
+  }, [open, onOpenChange]);
 
   const handleCreate = async () => {
     const trimmed = title.trim();

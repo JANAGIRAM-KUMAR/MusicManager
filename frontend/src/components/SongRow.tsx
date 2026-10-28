@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ListEnd, ListMusic, ListPlus, Pause, Play, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { CoverImage } from "@/components/CoverImage";
@@ -30,6 +30,12 @@ export const SongRow = ({
 }: SongRowProps) => {
   const [pickerOpen, setPickerOpen] = useState(false);
   const togglePlay = usePlayerStore((state) => state.togglePlay);
+
+  useEffect(() => {
+    const handleClose = () => setPickerOpen(false);
+    window.addEventListener("spotify:close-all-dialogs", handleClose);
+    return () => window.removeEventListener("spotify:close-all-dialogs", handleClose);
+  }, []);
 
   const activate = () => {
     if (isActive) togglePlay();
