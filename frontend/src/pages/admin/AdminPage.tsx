@@ -23,6 +23,16 @@ const AdminPage = () => {
         fetchStats();
     }, [fetchAlbums, fetchSongs, fetchStats]);
 
+    // Cleanup any lingering modal backdrops or scroll-locks when mounting admin dashboard
+    useEffect(() => {
+        window.dispatchEvent(new CustomEvent("spotify:close-all-dialogs"));
+        if (typeof document !== "undefined") {
+            document.body.style.pointerEvents = "";
+            document.body.style.overflow = "";
+            document.body.removeAttribute("data-scroll-locked");
+        }
+    }, []);
+
     if (!isAdmin && !isLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-black text-white p-4">
@@ -45,7 +55,7 @@ const AdminPage = () => {
     const adminName = user?.fullName || user?.email?.split("@")[0] || "Admin";
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="min-h-screen w-full bg-zinc-950 text-zinc-100 overflow-x-hidden">
             {/* Ambient Background Glow */}
             <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))]" />
 

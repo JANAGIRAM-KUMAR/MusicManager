@@ -58,10 +58,8 @@
   }
 
   html,
-  body,
-  #root {
-    height: 100%;
-    overflow: hidden;
+  body {
+    min-height: 100%;
   }
 
   body {
