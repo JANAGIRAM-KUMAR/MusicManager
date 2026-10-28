@@ -60,6 +60,8 @@ export class AudioEngine {
   private rafId: number | null = null;
   private isDestroyed = false;
   private isSeeking = false;
+  private lastEmitTime = 0;
+  private corsFallbackAttempted = false;
 
   constructor() {
     this.audio = typeof Audio !== "undefined" ? new Audio() : ({} as HTMLAudioElement);
@@ -70,7 +72,7 @@ export class AudioEngine {
 
   private setupAudioElement() {
     // Safari blocks or mutes createMediaElementSource on cross-origin Cloudinary streams (WebKit Bug #213797).
-    // For non-Safari browsers (Chrome, Firefox, Edge), enable anonymous CORS for Web Audio analysis.
+    // For other browsers, start with anonymous CORS for Web Audio analysis.
     if (!isSafari()) {
       this.audio.crossOrigin = "anonymous";
     }
@@ -95,7 +97,8 @@ export class AudioEngine {
     });
 
     this.audio.addEventListener("pause", () => {
-      if (!this.audio.ended) {
+      // Ignore transient pause events when the track has ended or is seeking
+      if (!this.audio.ended && !this.isSeeking) {
         this.emit("pause", undefined);
       }
       this.stopTimeLoop();
@@ -112,20 +115,55 @@ export class AudioEngine {
 
     this.audio.addEventListener("playing", () => {
       this.emit("loading", { loading: false });
+      this.emit("play", undefined);
+      this.startTimeLoop();
     });
 
     this.audio.addEventListener("canplay", () => {
       this.emit("loading", { loading: false });
     });
 
+    this.audio.addEventListener("seeking", () => {
+      this.isSeeking = true;
+    });
+
+    this.audio.addEventListener("seeked", () => {
+      this.isSeeking = false;
+      this.emitCurrentTime(true);
+    });
+
     this.audio.addEventListener("error", () => {
       const error = this.audio.error;
+      const url = this.currentUrl;
+
+      // If anonymous CORS fails (e.g. byte-range CDN glitch), automatically fallback to direct native playback
+      if (this.audio.crossOrigin && url && !this.corsFallbackAttempted) {
+        this.corsFallbackAttempted = true;
+        console.warn("CORS playback issue, recovering with direct native playback:", error?.message);
+        try {
+          this.audio.removeAttribute("crossorigin");
+          this.audio.src = url;
+          const playPromise = this.audio.play();
+          if (playPromise) {
+            playPromise.catch((e) => {
+              console.error("Direct native playback retry failed:", e);
+              this.stopTimeLoop();
+              this.emit("loading", { loading: false });
+              this.emit("error", { message: `Audio error: ${e.message}`, url });
+            });
+          }
+          return;
+        } catch {
+          // ignore and emit error
+        }
+      }
+
       const message = error
         ? `Audio error code ${error.code}: ${error.message || "Failed to load"}`
         : "Audio error";
       this.stopTimeLoop();
       this.emit("loading", { loading: false });
-      this.emit("error", { message, url: this.currentUrl || "" });
+      this.emit("error", { message, url: url || "" });
     });
   }
 
@@ -149,6 +187,13 @@ export class AudioEngine {
 
       const ctx = new AudioCtx();
       this.audioContext = ctx;
+
+      // Automatically attempt to resume if browser suspended context
+      ctx.onstatechange = () => {
+        if (ctx.state === "suspended" && !this.audio.paused && !this.audio.ended) {
+          void ctx.resume().catch(() => {});
+        }
+      };
 
       // 3-Band Equalizer Filters
       const bass = ctx.createBiquadFilter();
@@ -181,7 +226,7 @@ export class AudioEngine {
       gain.gain.value = this.muted ? 0 : this.volume;
       this.gainNode = gain;
 
-      // Single connection: audio -> bass -> mid -> treble -> analyser -> gain -> destination
+      // Route: audio -> bass -> mid -> treble -> analyser -> gain -> destination
       const source = ctx.createMediaElementSource(this.audio);
       this._sourceNode = source;
 
@@ -203,13 +248,6 @@ export class AudioEngine {
   public unlock(): void {
     if (this.audioContext && this.audioContext.state === "suspended") {
       void this.audioContext.resume().catch(() => {});
-    }
-    if (this.audio && typeof this.audio.load === "function") {
-      try {
-        this.audio.load();
-      } catch {
-        // ignore
-      }
     }
   }
 
@@ -247,13 +285,24 @@ export class AudioEngine {
     }
   }
 
-  private emitCurrentTime() {
+  private emitCurrentTime(force = false) {
     if (!this.audio) return;
+    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    // Throttle progress updates to ~140ms to avoid React 19 re-render starvation (from 120Hz down to ~7Hz)
+    if (!force && now - this.lastEmitTime < 140) {
+      return;
+    }
+    this.lastEmitTime = now;
+
     const currentTime = this.audio.currentTime || 0;
     const duration = this.audio.duration || 0;
     let buffered = 0;
     if (this.audio.buffered && this.audio.buffered.length > 0) {
-      buffered = this.audio.buffered.end(this.audio.buffered.length - 1);
+      try {
+        buffered = this.audio.buffered.end(this.audio.buffered.length - 1);
+      } catch {
+        // ignore
+      }
     }
     this.emit("time", {
       currentTime: isNaN(currentTime) ? 0 : currentTime,
@@ -306,6 +355,7 @@ export class AudioEngine {
     }
 
     const requestId = ++this.playRequestId;
+    this.corsFallbackAttempted = false;
     this.stopTimeLoop();
     this.emit("loading", { loading: true });
 
@@ -315,15 +365,17 @@ export class AudioEngine {
       void this.audioContext.resume().catch(() => {});
     }
 
-    // Prepare audio element
-    try {
-      this.audio.pause();
-    } catch {
-      // ignore
+    // Only pause and reload if switching to a different URL
+    if (this.currentUrl !== url || !this.audio.src) {
+      try {
+        this.audio.pause();
+      } catch {
+        // ignore
+      }
+      this.currentUrl = url;
+      this.audio.src = url;
     }
 
-    this.currentUrl = url;
-    this.audio.src = url;
     this.applyVolume();
 
     // Crossfade handling if specified and Web Audio gain node exists
@@ -336,13 +388,15 @@ export class AudioEngine {
 
     if (options.autoplay !== false) {
       try {
-        // Crucial for Safari: Trigger play() synchronously without preceding await
+        // Crucial for Safari & mobile: Trigger play() synchronously without preceding await
         const playPromise = this.audio.play();
         if (playPromise !== undefined) {
           await playPromise;
         }
         if (this.playRequestId !== requestId) {
-          this.audio.pause();
+          if (this.currentUrl !== url) {
+            this.audio.pause();
+          }
           return;
         }
       } catch (err: unknown) {
@@ -371,7 +425,9 @@ export class AudioEngine {
         await playPromise;
       }
       if (this.playRequestId !== requestId) {
-        this.audio.pause();
+        if (this.audio.src !== this.currentUrl) {
+          this.audio.pause();
+        }
       }
     } catch (err: unknown) {
       if (this.playRequestId !== requestId) return;
@@ -419,8 +475,8 @@ export class AudioEngine {
     } catch {
       // ignore
     }
-    this.isSeeking = false;
-    this.emitCurrentTime();
+    // Note: isSeeking will be reset to false in the 'seeked' event listener
+    this.emitCurrentTime(true);
   }
 
   setVolume(volume: number) {

@@ -92,13 +92,20 @@ export const PlayerBar = () => {
         return;
       }
 
+      // If lyrics panel is open, let spacebar scroll or interact normally rather than toggling playback
+      if (usePlayerStore.getState().lyricsOpen) {
+        return;
+      }
+
       if (event.code === "Space") {
         event.preventDefault();
         togglePlay();
       } else if (event.key === "ArrowRight" && event.shiftKey) {
-        seek(Math.min(duration, progress + 5));
+        const { duration: dur, progress: prog } = usePlayerStore.getState();
+        seek(Math.min(dur, prog + 5));
       } else if (event.key === "ArrowLeft" && event.shiftKey) {
-        seek(Math.max(0, progress - 5));
+        const { progress: prog } = usePlayerStore.getState();
+        seek(Math.max(0, prog - 5));
       } else if (event.key.toLowerCase() === "m") {
         toggleMute();
       }
@@ -106,7 +113,7 @@ export const PlayerBar = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [duration, progress, seek, toggleMute, togglePlay]);
+  }, [seek, toggleMute, togglePlay]);
 
   const displayProgress = scrub ?? progress;
   const displayVolume = volumeScrub ?? (muted ? 0 : volume);
