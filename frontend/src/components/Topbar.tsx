@@ -86,12 +86,16 @@ const Topbar = () => {
         <AudioLines className="size-5 text-emerald-400" />
       </Link>
 
-      <div className={cn("flex-1 min-w-0 mx-1", location.pathname !== "/search" && "hidden sm:block")}>
-        <SearchBox
-          key={`${location.pathname}${location.search}`}
-          initialQuery={initialQuery}
-        />
-      </div>
+      {location.pathname !== "/search" ? (
+        <div className="flex-1 min-w-0 mx-1 hidden sm:block">
+          <SearchBox
+            key={`${location.pathname}${location.search}`}
+            initialQuery={initialQuery}
+          />
+        </div>
+      ) : (
+        <div className="flex-1 min-w-0 mx-1" />
+      )}
 
       <div className="flex items-center gap-2">
         {isAdmin && (
