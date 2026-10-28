@@ -19,19 +19,12 @@ import { LikeButton } from "@/components/LikeButton";
 import { Visualizer } from "@/components/Visualizer";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useLibraryStore } from "@/stores/useLibraryStore";
 import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { audioEngine } from "@/lib/audioEngine";
 import { MobilePlayerModal } from "./MobilePlayerModal";
 
 export const PlayerBar = () => {
@@ -48,10 +41,10 @@ export const PlayerBar = () => {
   const muted = usePlayerStore((state) => state.muted);
   const repeat = usePlayerStore((state) => state.repeat);
   const shuffle = usePlayerStore((state) => state.shuffle);
-  const crossfade = usePlayerStore((state) => state.crossfade);
-  const eq = usePlayerStore((state) => state.eq);
   void usePlayerStore((state) => state.graphMode);
   const queueOpen = usePlayerStore((state) => state.queueOpen);
+  const audioSettingsOpen = usePlayerStore((state) => state.audioSettingsOpen);
+  const setAudioSettingsOpen = usePlayerStore((state) => state.setAudioSettingsOpen);
 
   const togglePlay = usePlayerStore((state) => state.togglePlay);
   const playNext = usePlayerStore((state) => state.playNext);
@@ -61,8 +54,6 @@ export const PlayerBar = () => {
   const cycleRepeat = usePlayerStore((state) => state.cycleRepeat);
   const setVolume = usePlayerStore((state) => state.setVolume);
   const toggleMute = usePlayerStore((state) => state.toggleMute);
-  const setCrossfade = usePlayerStore((state) => state.setCrossfade);
-  const setEq = usePlayerStore((state) => state.setEq);
   const toggleQueue = usePlayerStore((state) => state.toggleQueue);
 
   const [scrub, setScrub] = useState<number | null>(null);
@@ -303,79 +294,22 @@ export const PlayerBar = () => {
         {/* Right: Audio FX, Lyrics, Queue, Volume */}
         <div className="flex flex-1 items-center justify-end gap-2.5 sm:w-[30%] sm:flex-none">
           <Visualizer className="hidden h-7 w-16 sm:block" />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Audio settings"
-                className="text-zinc-400 hover:bg-white/10 hover:text-white"
-              >
-                <SlidersHorizontal className="size-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="border-white/10 glass-dock text-white sm:max-w-md rounded-2xl shadow-2xl">
-              <DialogHeader>
-                <DialogTitle>Playback & Audio settings</DialogTitle>
-                <DialogDescription className="text-zinc-400">
-                  Adjust equalizer and crossfade settings
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-6">
-                <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Crossfade</p>
-                      <p className="text-xs text-zinc-400">Smooth transition between tracks</p>
-                    </div>
-                    <span className="text-xs tabular-nums text-zinc-400">{(crossfade / 1000).toFixed(1)}s</span>
-                  </div>
-                  <Slider
-                    value={[crossfade / 1000]}
-                    min={0}
-                    max={12}
-                    step={0.5}
-                    onValueChange={(value) => setCrossfade(Math.round(value[0] * 1000))}
-                    className="[&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:border-white [&_[data-slot=slider-track]]:bg-zinc-700"
-                  />
-                </div>
-
-                <div className="border-t border-white/10 pt-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">3-Band Equalizer</p>
-                      <p className="text-xs text-zinc-400">Fine-tune audio balance</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-zinc-400 hover:text-white"
-                      onClick={() => setEq({ bass: 0, mid: 0, treble: 0 })}
-                    >
-                      Reset
-                    </Button>
-                  </div>
-                  {(["bass", "mid", "treble"] as const).map((band) => (
-                    <div key={band} className="mb-3">
-                      <div className="mb-1 flex justify-between text-xs text-zinc-400">
-                        <span className="capitalize">{band}</span>
-                        <span className="tabular-nums">{eq[band] > 0 ? "+" : ""}{eq[band]} dB</span>
-                      </div>
-                      <Slider
-                        value={[eq[band]]}
-                        min={-12}
-                        max={12}
-                        step={1}
-                        onValueChange={(value) => setEq({ ...eq, [band]: value[0] })}
-                        className="[&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:border-white [&_[data-slot=slider-track]]:bg-zinc-700"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Audio settings"
+            onClick={() => {
+              audioEngine.unlock();
+              void audioEngine.resumeContext();
+              setAudioSettingsOpen(true);
+            }}
+            className={cn(
+              "text-zinc-400 hover:bg-white/10 hover:text-white transition-colors",
+              audioSettingsOpen && "text-emerald-400 hover:text-emerald-300"
+            )}
+          >
+            <SlidersHorizontal className="size-4" />
+          </Button>
 
           <button
             type="button"

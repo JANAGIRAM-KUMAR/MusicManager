@@ -5,6 +5,7 @@ import { PlayerBar } from "./components/PlayerBar";
 import { QueuePanel } from "./components/QueuePanel";
 import { MobileNav } from "./components/MobileNav";
 import { LyricsPanel } from "@/components/lyrics/LyricsPanel";
+import { AudioSettingsDialog } from "@/components/audio/AudioSettingsDialog";
 import Topbar from "@/components/Topbar";
 import { useLibraryStore } from "@/stores/useLibraryStore";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -105,6 +106,9 @@ const MainLayout = () => {
 
       {/* Global Synchronized Karaoke Lyrics View */}
       <LyricsPanel />
+
+      {/* Global Studio Playback & Audio Settings Dialog */}
+      <AudioSettingsDialog />
     </div>
   );
 };

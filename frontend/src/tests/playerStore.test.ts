@@ -150,4 +150,43 @@ describe("usePlayerStore Playback & Queue Management", () => {
     usePlayerStore.getState().removeFromQueue(1);
     expect(usePlayerStore.getState().queue.length).toBe(1);
   });
+
+  it("should manage audio and playback DSP settings with studio precision", () => {
+    const store = usePlayerStore.getState();
+
+    // EQ Preset selection
+    store.setEqPreset("Bass Boost");
+    expect(usePlayerStore.getState().eq.preset).toBe("Bass Boost");
+    expect(usePlayerStore.getState().eq.bass).toBe(7);
+
+    // EQ Toggle bypass
+    store.toggleEq();
+    expect(usePlayerStore.getState().eq.enabled).toBe(false);
+    store.toggleEq();
+    expect(usePlayerStore.getState().eq.enabled).toBe(true);
+
+    // Playback rate
+    store.setPlaybackRate(1.25);
+    expect(usePlayerStore.getState().playbackRate).toBe(1.25);
+
+    // Stereo pan and normalization
+    store.setStereoPan(0.5);
+    expect(usePlayerStore.getState().stereoPan).toBe(0.5);
+
+    store.setNormalizeVolume(true);
+    expect(usePlayerStore.getState().normalizeVolume).toBe(true);
+
+    store.setAudioQuality("lossless");
+    expect(usePlayerStore.getState().audioQuality).toBe("lossless");
+
+    // Reset all settings
+    store.resetAudioSettings();
+    const resetState = usePlayerStore.getState();
+    expect(resetState.playbackRate).toBe(1.0);
+    expect(resetState.stereoPan).toBe(0);
+    expect(resetState.normalizeVolume).toBe(false);
+    expect(resetState.eq.preset).toBe("Flat");
+    expect(resetState.eq.bass).toBe(0);
+    expect(resetState.audioQuality).toBe("high");
+  });
 });

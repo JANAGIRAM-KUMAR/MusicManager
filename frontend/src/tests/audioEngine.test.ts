@@ -41,6 +41,8 @@ describe("AudioEngine", () => {
       destination = {};
       createAnalyser = vi.fn(() => mockAnalyser);
       createGain = vi.fn(() => mockGain);
+      createChannelSplitter = vi.fn(() => ({ connect: vi.fn(), channelCount: 2, channelCountMode: "explicit" }));
+      createChannelMerger = vi.fn(() => ({ connect: vi.fn() }));
       createBiquadFilter = vi.fn(() => mockFilter);
       createMediaElementSource = vi.fn(() => mockSource);
       resume = vi.fn(async () => {
@@ -90,9 +92,46 @@ describe("AudioEngine", () => {
 
   it("should update 3-band equalizer settings", () => {
     engine.getAnalyser();
-    engine.setEq({ bass: 4, mid: -2, treble: 6 });
-    // Equalizer updates applied smoothly
+    engine.setEq({ enabled: true, preset: "Rock", bass: 4, mid: -2, treble: 6 });
+    expect(engine.getEq().bass).toBe(4);
+    expect(engine.getEq().preset).toBe("Rock");
     expect(engine.getAnalyser()).not.toBeNull();
+  });
+
+  it("should support EQ bypass mode without breaking audio chain", () => {
+    engine.getAnalyser();
+    engine.setEq({ enabled: false, bass: 6, mid: 4, treble: 2 });
+    expect(engine.getEq().enabled).toBe(false);
+  });
+
+  it("should control playback rate within safe bounds (0.5x to 2.0x)", () => {
+    engine.setPlaybackRate(1.5);
+    expect(engine.getPlaybackRate()).toBe(1.5);
+
+    // Clamps below 0.5
+    engine.setPlaybackRate(0.2);
+    expect(engine.getPlaybackRate()).toBe(0.5);
+
+    // Clamps above 2.0
+    engine.setPlaybackRate(3.0);
+    expect(engine.getPlaybackRate()).toBe(2.0);
+  });
+
+  it("should set stereo balance and volume normalization settings", () => {
+    engine.setStereoPan(-0.5);
+    expect(engine.getStereoPan()).toBe(-0.5);
+
+    // Clamps pan
+    engine.setStereoPan(-1.5);
+    expect(engine.getStereoPan()).toBe(-1.0);
+
+    engine.setNormalizeVolume(true);
+    expect(engine.getNormalizeVolume()).toBe(true);
+
+    const contextState = engine.getAudioContextState();
+    expect(contextState).not.toBeNull();
+    expect(contextState?.state).toBe("running");
+    expect(engine.getSampleRate()).toBeGreaterThan(0);
   });
 
   it("should emit loading and play events on valid track play", async () => {
@@ -142,5 +181,27 @@ describe("AudioEngine", () => {
 
     await expect(engine.playUrl("")).rejects.toThrow();
     expect(receivedError).toBe(true);
+  });
+
+  it("should detect Safari and safely bypass Web Audio graph to preserve clear audio output", () => {
+    const originalUA = navigator.userAgent;
+    try {
+      Object.defineProperty(navigator, "userAgent", {
+        value:
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+        configurable: true,
+      });
+
+      const safariEngine = new AudioEngine();
+      expect(safariEngine.ensureAudioGraph()).toBe(false);
+      expect(safariEngine.getGraphMode()).toBe("element");
+      expect(safariEngine.getSourceNode()).toBeNull();
+      safariEngine.destroy();
+    } finally {
+      Object.defineProperty(navigator, "userAgent", {
+        value: originalUA,
+        configurable: true,
+      });
+    }
   });
 });

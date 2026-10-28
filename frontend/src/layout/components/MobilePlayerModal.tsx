@@ -4,17 +4,10 @@ import { CoverImage } from "@/components/CoverImage";
 import { LikeButton } from "@/components/LikeButton";
 import { LyricsPreviewCard } from "@/components/lyrics/LyricsPreviewCard";
 import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { audioEngine } from "@/lib/audioEngine";
 
 interface MobilePlayerModalProps {
   open: boolean;
@@ -29,8 +22,6 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
   const duration = usePlayerStore((state) => state.duration);
   const repeat = usePlayerStore((state) => state.repeat);
   const shuffle = usePlayerStore((state) => state.shuffle);
-  const crossfade = usePlayerStore((state) => state.crossfade);
-  const eq = usePlayerStore((state) => state.eq);
 
   const togglePlay = usePlayerStore((state) => state.togglePlay);
   const playNext = usePlayerStore((state) => state.playNext);
@@ -38,13 +29,11 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
   const seek = usePlayerStore((state) => state.seek);
   const toggleShuffle = usePlayerStore((state) => state.toggleShuffle);
   const cycleRepeat = usePlayerStore((state) => state.cycleRepeat);
-  const setCrossfade = usePlayerStore((state) => state.setCrossfade);
-  const setEq = usePlayerStore((state) => state.setEq);
   const toggleQueue = usePlayerStore((state) => state.toggleQueue);
   const setLyricsOpen = usePlayerStore((state) => state.setLyricsOpen);
+  const setAudioSettingsOpen = usePlayerStore((state) => state.setAudioSettingsOpen);
 
   const [scrub, setScrub] = useState<number | null>(null);
-  const [eqOpen, setEqOpen] = useState(false);
 
   if (!open || !currentSong) return null;
 
@@ -216,7 +205,11 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
 
           <button
             type="button"
-            onClick={() => setEqOpen(true)}
+            onClick={() => {
+              audioEngine.unlock();
+              void audioEngine.resumeContext();
+              setAudioSettingsOpen(true);
+            }}
             className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-full glass-pill active:scale-95 transition"
           >
             <SlidersHorizontal className="size-4 text-emerald-400" />
@@ -224,64 +217,6 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
           </button>
         </div>
       </div>
-
-      {/* Audio FX Dialog */}
-      <Dialog open={eqOpen} onOpenChange={setEqOpen}>
-        <DialogContent className="border-white/10 glass-dock text-white max-w-sm rounded-2xl shadow-2xl">
-          <DialogHeader>
-            <DialogTitle>Playback & Audio Settings</DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
-              Adjust equalizer frequencies and crossfade
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-5 py-2">
-            <div>
-              <div className="flex justify-between text-xs text-zinc-300 mb-2">
-                <span>Crossfade</span>
-                <span className="tabular-nums">{(crossfade / 1000).toFixed(1)}s</span>
-              </div>
-              <Slider
-                value={[crossfade / 1000]}
-                min={0}
-                max={12}
-                step={0.5}
-                onValueChange={(val) => setCrossfade(Math.round(val[0] * 1000))}
-              />
-            </div>
-
-            <div className="border-t border-zinc-800 pt-4">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-xs font-semibold text-zinc-300">3-Band Equalizer</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEq({ bass: 0, mid: 0, treble: 0 })}
-                  className="h-6 text-[10px] text-zinc-400 hover:text-white"
-                >
-                  Reset
-                </Button>
-              </div>
-
-              {(["bass", "mid", "treble"] as const).map((band) => (
-                <div key={band} className="mb-3">
-                  <div className="flex justify-between text-xs text-zinc-400 mb-1">
-                    <span className="capitalize">{band}</span>
-                    <span className="tabular-nums">{eq[band] > 0 ? "+" : ""}{eq[band]} dB</span>
-                  </div>
-                  <Slider
-                    value={[eq[band]]}
-                    min={-12}
-                    max={12}
-                    step={1}
-                    onValueChange={(val) => setEq({ ...eq, [band]: val[0] })}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

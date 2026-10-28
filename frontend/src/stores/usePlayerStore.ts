@@ -2,8 +2,24 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import toast from "react-hot-toast";
 import { audioEngine } from "@/lib/audioEngine";
-import type { EqSettings, RepeatMode, Song } from "@/types";
+import type { AudioQuality, EqPresetName, EqSettings, RepeatMode, Song } from "@/types";
 import { useAuthStore } from "@/stores/useAuthStore";
+
+export const EQ_PRESETS: Record<EqPresetName, { bass: number; mid: number; treble: number }> = {
+  "Flat": { bass: 0, mid: 0, treble: 0 },
+  "Bass Boost": { bass: 7, mid: 1, treble: -1 },
+  "Bass Reducer": { bass: -7, mid: 0, treble: 2 },
+  "Vocal Booster": { bass: -2, mid: 6, treble: 2 },
+  "Treble Booster": { bass: -2, mid: 1, treble: 7 },
+  "Electronic": { bass: 6, mid: 0, treble: 5 },
+  "Hip-Hop": { bass: 7, mid: 2, treble: 1 },
+  "Rock": { bass: 5, mid: 3, treble: 5 },
+  "Pop": { bass: 3, mid: 4, treble: 3 },
+  "Acoustic": { bass: 4, mid: 3, treble: 4 },
+  "Classical": { bass: 3, mid: 1, treble: 5 },
+  "Lounge": { bass: 5, mid: -2, treble: 3 },
+  "Custom": { bass: 0, mid: 0, treble: 0 },
+};
 
 interface PlayerStore {
   queue: Song[];
@@ -22,10 +38,15 @@ interface PlayerStore {
   repeat: RepeatMode;
   shuffle: boolean;
   crossfade: number;
+  playbackRate: number;
+  normalizeVolume: boolean;
+  stereoPan: number;
+  audioQuality: AudioQuality;
   eq: EqSettings;
   graphMode: "webaudio" | "element";
   queueOpen: boolean;
   lyricsOpen: boolean;
+  audioSettingsOpen: boolean;
 
   initializeQueue: (songs: Song[]) => void;
   playSongs: (songs: Song[], startIndex?: number) => void;
@@ -47,11 +68,20 @@ interface PlayerStore {
   setVolume: (volume: number) => void;
   toggleMute: () => void;
   setCrossfade: (ms: number) => void;
-  setEq: (eq: EqSettings) => void;
+  setPlaybackRate: (rate: number) => void;
+  setNormalizeVolume: (normalize: boolean) => void;
+  setStereoPan: (pan: number) => void;
+  setAudioQuality: (quality: AudioQuality) => void;
+  setEq: (eq: Partial<EqSettings>) => void;
+  setEqPreset: (preset: EqPresetName) => void;
+  toggleEq: () => void;
+  resetAudioSettings: () => void;
+
   toggleQueue: () => void;
   setQueueOpen: (open: boolean) => void;
   toggleLyrics: () => void;
   setLyricsOpen: (open: boolean) => void;
+  setAudioSettingsOpen: (open: boolean) => void;
 }
 
 const shuffleArray = <T,>(items: T[]): T[] => {
@@ -98,10 +128,15 @@ const initialState = {
   repeat: "off" as RepeatMode,
   shuffle: false,
   crossfade: 0,
-  eq: { bass: 0, mid: 0, treble: 0 } as EqSettings,
+  playbackRate: 1.0,
+  normalizeVolume: false,
+  stereoPan: 0,
+  audioQuality: "high" as AudioQuality,
+  eq: { enabled: true, preset: "Flat", bass: 0, mid: 0, treble: 0 } as EqSettings,
   graphMode: "webaudio" as const,
   queueOpen: false,
   lyricsOpen: false,
+  audioSettingsOpen: false,
 };
 
 // Track failed tracks in the current playback session to prevent infinite loops
@@ -504,15 +539,82 @@ export const usePlayerStore = create<PlayerStore>()(
         set({ crossfade: clamped });
       },
 
-      setEq: (eq: EqSettings) => {
-        audioEngine.setEq(eq);
-        set({ eq });
+      setPlaybackRate: (rate: number) => {
+        const clamped = Math.min(Math.max(rate, 0.5), 2.0);
+        audioEngine.setPlaybackRate(clamped);
+        set({ playbackRate: clamped });
+      },
+
+      setNormalizeVolume: (normalize: boolean) => {
+        audioEngine.setNormalizeVolume(normalize);
+        set({ normalizeVolume: normalize });
+      },
+
+      setStereoPan: (pan: number) => {
+        const clamped = Math.min(Math.max(pan, -1), 1);
+        audioEngine.setStereoPan(clamped);
+        set({ stereoPan: clamped });
+      },
+
+      setAudioQuality: (quality: AudioQuality) => {
+        set({ audioQuality: quality });
+      },
+
+      setEq: (eqUpdate: Partial<EqSettings>) => {
+        const currentEq = get().eq;
+        const newEq: EqSettings = {
+          ...currentEq,
+          ...eqUpdate,
+          preset: eqUpdate.preset ?? "Custom",
+        };
+        audioEngine.setEq(newEq);
+        set({ eq: newEq });
+      },
+
+      setEqPreset: (presetName: EqPresetName) => {
+        const values = EQ_PRESETS[presetName] || EQ_PRESETS["Flat"];
+        const currentEq = get().eq;
+        const newEq: EqSettings = {
+          ...currentEq,
+          preset: presetName,
+          bass: values.bass,
+          mid: values.mid,
+          treble: values.treble,
+        };
+        audioEngine.setEq(newEq);
+        set({ eq: newEq });
+      },
+
+      toggleEq: () => {
+        const currentEq = get().eq;
+        const enabled = !(currentEq.enabled ?? true);
+        const newEq: EqSettings = { ...currentEq, enabled };
+        audioEngine.setEq(newEq);
+        set({ eq: newEq });
+      },
+
+      resetAudioSettings: () => {
+        const defaultEq: EqSettings = { enabled: true, preset: "Flat", bass: 0, mid: 0, treble: 0 };
+        audioEngine.setEq(defaultEq);
+        audioEngine.setPlaybackRate(1.0);
+        audioEngine.setNormalizeVolume(false);
+        audioEngine.setStereoPan(0);
+        audioEngine.setCrossfade(0);
+        set({
+          eq: defaultEq,
+          playbackRate: 1.0,
+          normalizeVolume: false,
+          stereoPan: 0,
+          crossfade: 0,
+          audioQuality: "high",
+        });
       },
 
       toggleQueue: () => set((s) => ({ queueOpen: !s.queueOpen })),
       setQueueOpen: (open: boolean) => set({ queueOpen: open }),
       toggleLyrics: () => set((s) => ({ lyricsOpen: !s.lyricsOpen })),
       setLyricsOpen: (open: boolean) => set({ lyricsOpen: open }),
+      setAudioSettingsOpen: (open: boolean) => set({ audioSettingsOpen: open }),
     }),
     {
       name: "soundwave-player-settings",
@@ -522,6 +624,10 @@ export const usePlayerStore = create<PlayerStore>()(
         repeat: persistState.repeat,
         shuffle: persistState.shuffle,
         crossfade: persistState.crossfade,
+        playbackRate: persistState.playbackRate,
+        normalizeVolume: persistState.normalizeVolume,
+        stereoPan: persistState.stereoPan,
+        audioQuality: persistState.audioQuality,
         eq: persistState.eq,
       }),
       onRehydrateStorage: () => (rehydratedState) => {
@@ -530,7 +636,10 @@ export const usePlayerStore = create<PlayerStore>()(
           audioEngine.setVolume(rehydratedState.volume ?? 0.7);
           audioEngine.setMuted(rehydratedState.muted ?? false);
           audioEngine.setCrossfade(rehydratedState.crossfade ?? 0);
-          audioEngine.setEq(rehydratedState.eq ?? { bass: 0, mid: 0, treble: 0 });
+          audioEngine.setPlaybackRate(rehydratedState.playbackRate ?? 1.0);
+          audioEngine.setNormalizeVolume(rehydratedState.normalizeVolume ?? false);
+          audioEngine.setStereoPan(rehydratedState.stereoPan ?? 0);
+          audioEngine.setEq(rehydratedState.eq ?? { enabled: true, preset: "Flat", bass: 0, mid: 0, treble: 0 });
         } catch {
           // ignore
         }

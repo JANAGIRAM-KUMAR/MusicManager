@@ -99,8 +99,36 @@ export interface User {
 
 export type RepeatMode = "off" | "all" | "one";
 
+export type EqPresetName =
+  | "Flat"
+  | "Bass Boost"
+  | "Bass Reducer"
+  | "Vocal Booster"
+  | "Treble Booster"
+  | "Electronic"
+  | "Hip-Hop"
+  | "Rock"
+  | "Pop"
+  | "Acoustic"
+  | "Classical"
+  | "Lounge"
+  | "Custom";
+
 export interface EqSettings {
-    bass: number;
-    mid: number;
-    treble: number;
+  enabled?: boolean;
+  preset?: EqPresetName;
+  bass: number;
+  mid: number;
+  treble: number;
+}
+
+export type AudioQuality = "lossless" | "high" | "normal" | "saver";
+
+export interface AudioSettings {
+  eq: EqSettings;
+  playbackRate: number;
+  crossfadeMs: number;
+  normalizeVolume: boolean;
+  stereoPan: number;
+  audioQuality: AudioQuality;
 }

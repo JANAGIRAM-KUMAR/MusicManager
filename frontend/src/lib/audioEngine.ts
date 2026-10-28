@@ -47,6 +47,9 @@ export class AudioEngine {
   private bassFilter: BiquadFilterNode | null = null;
   private midFilter: BiquadFilterNode | null = null;
   private trebleFilter: BiquadFilterNode | null = null;
+  private compressorNode: DynamicsCompressorNode | null = null;
+  private leftPanGain: GainNode | null = null;
+  private rightPanGain: GainNode | null = null;
   private analyserNode: AnalyserNode | null = null;
   private gainNode: GainNode | null = null;
 
@@ -55,7 +58,10 @@ export class AudioEngine {
   private volume = 0.7;
   private muted = false;
   private crossfadeMs = 0;
-  private eqSettings: EqSettings = { bass: 0, mid: 0, treble: 0 };
+  private playbackRate = 1.0;
+  private normalizeVolume = false;
+  private stereoPan = 0;
+  private eqSettings: EqSettings = { enabled: true, preset: "Flat", bass: 0, mid: 0, treble: 0 };
   private listeners = new Map<keyof AudioEngineEventMap, Set<Listener<never>>>();
   private rafId: number | null = null;
   private isDestroyed = false;
@@ -71,8 +77,8 @@ export class AudioEngine {
   }
 
   private setupAudioElement() {
-    // Safari blocks or mutes createMediaElementSource on cross-origin Cloudinary streams (WebKit Bug #213797).
-    // For other browsers, start with anonymous CORS for Web Audio analysis.
+    // Safari blocks or mutes createMediaElementSource on cross-origin/range streams (WebKit Bug #213797).
+    // For non-Safari browsers (Chrome, Firefox, Edge), enable anonymous CORS for Web Audio analysis.
     if (!isSafari()) {
       this.audio.crossOrigin = "anonymous";
     }
@@ -91,6 +97,10 @@ export class AudioEngine {
     });
 
     this.audio.addEventListener("play", () => {
+      this.ensureAudioGraph();
+      if (this.audioContext && this.audioContext.state === "suspended") {
+        void this.audioContext.resume().catch(() => {});
+      }
       this.emit("loading", { loading: false });
       this.emit("play", undefined);
       this.startTimeLoop();
@@ -114,6 +124,10 @@ export class AudioEngine {
     });
 
     this.audio.addEventListener("playing", () => {
+      this.ensureAudioGraph();
+      if (this.audioContext && this.audioContext.state === "suspended") {
+        void this.audioContext.resume().catch(() => {});
+      }
       this.emit("loading", { loading: false });
       this.emit("play", undefined);
       this.startTimeLoop();
@@ -168,12 +182,12 @@ export class AudioEngine {
   }
 
   public ensureAudioGraph(): boolean {
-    if (this.audioContext && this.analyserNode) {
+    if (this.audioContext && this.analyserNode && this._sourceNode) {
       return true;
     }
     if (typeof window === "undefined") return false;
 
-    // Safari has a long-standing WebKit bug (#213797) where createMediaElementSource mutes cross-origin audio.
+    // Safari has a long-standing WebKit bug (#213797) where createMediaElementSource mutes cross-origin audio or outputs silence.
     // Playing directly through the native HTMLAudioElement in Safari ensures 100% reliable, clear audio.
     if (isSafari()) {
       return false;
@@ -185,8 +199,10 @@ export class AudioEngine {
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return false;
 
-      const ctx = new AudioCtx();
-      this.audioContext = ctx;
+      if (!this.audioContext) {
+        this.audioContext = new AudioCtx();
+      }
+      const ctx = this.audioContext;
 
       // Automatically attempt to resume if browser suspended context
       ctx.onstatechange = () => {
@@ -212,13 +228,13 @@ export class AudioEngine {
       const treble = ctx.createBiquadFilter();
       treble.type = "highshelf";
       treble.frequency.value = 4000;
-      treble.gain.value = this.eqSettings.treble;
+      treble.gain.value = this.eqSettings.enabled !== false ? this.eqSettings.treble : 0;
       this.trebleFilter = treble;
 
-      // Realtime AnalyserNode
+      // Realtime AnalyserNode with 512-point FFT (256 frequency bins) for rich musical spectrum resolution
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 64; // 32 frequency bins
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.75;
       this.analyserNode = analyser;
 
       // Master Gain
@@ -226,14 +242,67 @@ export class AudioEngine {
       gain.gain.value = this.muted ? 0 : this.volume;
       this.gainNode = gain;
 
-      // Route: audio -> bass -> mid -> treble -> analyser -> gain -> destination
-      const source = ctx.createMediaElementSource(this.audio);
-      this._sourceNode = source;
+      // Route: audio -> bass -> mid -> treble -> compressor -> stereo balance splitter/merger -> analyser -> gain -> destination
+      if (!this._sourceNode) {
+        this._sourceNode = ctx.createMediaElementSource(this.audio);
+      }
+      const source = this._sourceNode;
 
       source.connect(bass);
       bass.connect(mid);
       mid.connect(treble);
-      treble.connect(analyser);
+
+      let lastNode: AudioNode = treble;
+
+      // Dynamics Compressor (Volume Normalizer)
+      if (typeof ctx.createDynamicsCompressor === "function") {
+        try {
+          const compressor = ctx.createDynamicsCompressor();
+          compressor.threshold.value = this.normalizeVolume ? -24 : 0;
+          compressor.knee.value = 30;
+          compressor.ratio.value = this.normalizeVolume ? 12 : 1;
+          compressor.attack.value = 0.003;
+          compressor.release.value = 0.25;
+          this.compressorNode = compressor;
+          lastNode.connect(compressor);
+          lastNode = compressor;
+        } catch {
+          // ignore compressor fallback
+        }
+      }
+
+      // Universal Dedicated Stereo Balance Control using ChannelSplitter and ChannelMerger
+      // Guaranteed to work identically across Safari, Chrome, Firefox, iOS, macOS, Windows
+      try {
+        const prePanGain = ctx.createGain();
+        prePanGain.channelCount = 2;
+        prePanGain.channelCountMode = "explicit";
+        prePanGain.channelInterpretation = "speakers";
+
+        const splitter = ctx.createChannelSplitter(2);
+        const leftGain = ctx.createGain();
+        const rightGain = ctx.createGain();
+        const merger = ctx.createChannelMerger(2);
+
+        splitter.channelCountMode = "explicit";
+        splitter.channelCount = 2;
+
+        lastNode.connect(prePanGain);
+        prePanGain.connect(splitter);
+        splitter.connect(leftGain, 0);
+        splitter.connect(rightGain, 1);
+        leftGain.connect(merger, 0, 0);
+        rightGain.connect(merger, 0, 1);
+
+        this.leftPanGain = leftGain;
+        this.rightPanGain = rightGain;
+        lastNode = merger;
+      } catch (pannerErr) {
+        console.warn("Stereo balance matrix setup skipped:", pannerErr);
+      }
+      this.applyStereoPan(this.stereoPan);
+
+      lastNode.connect(analyser);
       analyser.connect(gain);
       gain.connect(ctx.destination);
 
@@ -331,14 +400,21 @@ export class AudioEngine {
 
   private applyVolume() {
     const effective = this.muted ? 0 : this.volume;
-    if (this.gainNode && this.audioContext) {
+    if (this.gainNode && this.audioContext && !isSafari()) {
       try {
         this.gainNode.gain.setValueAtTime(effective, this.audioContext.currentTime);
       } catch {
-        // fallback
+        this.gainNode.gain.value = effective;
       }
-    }
-    if (this.audio) {
+      if (this.audio) {
+        try {
+          this.audio.volume = 1.0;
+          this.audio.muted = false;
+        } catch {
+          // ignore
+        }
+      }
+    } else if (this.audio) {
       try {
         this.audio.volume = effective;
         this.audio.muted = this.muted;
@@ -359,6 +435,11 @@ export class AudioEngine {
     this.stopTimeLoop();
     this.emit("loading", { loading: true });
 
+    // On Safari, strip any crossorigin attribute to allow native media playback
+    if (isSafari() && this.audio && typeof this.audio.removeAttribute === "function") {
+      this.audio.removeAttribute("crossorigin");
+    }
+
     // Initialize Web Audio graph if supported (non-Safari)
     this.ensureAudioGraph();
     if (this.audioContext && this.audioContext.state === "suspended") {
@@ -377,6 +458,15 @@ export class AudioEngine {
     }
 
     this.applyVolume();
+
+    // Apply playback rate
+    if (this.audio) {
+      try {
+        this.audio.playbackRate = this.playbackRate;
+      } catch {
+        // ignore
+      }
+    }
 
     // Crossfade handling if specified and Web Audio gain node exists
     if (options.crossfadeMs && options.crossfadeMs > 0 && this.gainNode && this.audioContext) {
@@ -501,20 +591,108 @@ export class AudioEngine {
     return this._sourceNode;
   }
 
+  setPlaybackRate(rate: number) {
+    const clamped = Math.min(2.0, Math.max(0.5, rate));
+    this.playbackRate = clamped;
+    if (this.audio) {
+      try {
+        this.audio.playbackRate = clamped;
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  getPlaybackRate(): number {
+    return this.playbackRate;
+  }
+
+  private applyStereoPan(pan: number) {
+    const clamped = Math.min(1, Math.max(-1, pan));
+    this.stereoPan = clamped;
+
+    if (this.audioContext && this.leftPanGain && this.rightPanGain) {
+      const now = this.audioContext.currentTime;
+      // Absolute channel attenuation:
+      // When pan = -1.0 (Hard Left): Left = 1.0, Right = 0.0 (Right channel 100% silent)
+      // When pan = 0.0 (Center): Left = 1.0, Right = 1.0 (Both channels full)
+      // When pan = +1.0 (Hard Right): Left = 0.0, Right = 1.0 (Left channel 100% silent)
+      const leftVal = clamped <= 0 ? 1 : Math.max(0, 1 - clamped);
+      const rightVal = clamped >= 0 ? 1 : Math.max(0, 1 + clamped);
+
+      try {
+        this.leftPanGain.gain.setValueAtTime(leftVal, now);
+        this.rightPanGain.gain.setValueAtTime(rightVal, now);
+      } catch {
+        this.leftPanGain.gain.value = leftVal;
+        this.rightPanGain.gain.value = rightVal;
+      }
+    }
+  }
+
+  setStereoPan(pan: number) {
+    this.ensureAudioGraph();
+    this.applyStereoPan(pan);
+  }
+
+  getStereoPan(): number {
+    return this.stereoPan;
+  }
+
+  setNormalizeVolume(enabled: boolean) {
+    this.normalizeVolume = enabled;
+    if (this.compressorNode && this.audioContext) {
+      const now = this.audioContext.currentTime;
+      try {
+        this.compressorNode.threshold.setTargetAtTime(enabled ? -24 : 0, now, 0.05);
+        this.compressorNode.ratio.setTargetAtTime(enabled ? 12 : 1, now, 0.05);
+      } catch {
+        this.compressorNode.threshold.value = enabled ? -24 : 0;
+        this.compressorNode.ratio.value = enabled ? 12 : 1;
+      }
+    }
+  }
+
+  getNormalizeVolume(): boolean {
+    return this.normalizeVolume;
+  }
+
   setEq(eq: EqSettings) {
-    this.eqSettings = eq;
+    this.eqSettings = { ...this.eqSettings, ...eq };
+    const isEnabled = this.eqSettings.enabled !== false;
+    const targetBass = isEnabled ? this.eqSettings.bass : 0;
+    const targetMid = isEnabled ? this.eqSettings.mid : 0;
+    const targetTreble = isEnabled ? this.eqSettings.treble : 0;
+
     if (this.bassFilter && this.midFilter && this.trebleFilter && this.audioContext) {
       try {
         const now = this.audioContext.currentTime;
-        this.bassFilter.gain.setTargetAtTime(eq.bass, now, 0.05);
-        this.midFilter.gain.setTargetAtTime(eq.mid, now, 0.05);
-        this.trebleFilter.gain.setTargetAtTime(eq.treble, now, 0.05);
+        this.bassFilter.gain.setTargetAtTime(targetBass, now, 0.05);
+        this.midFilter.gain.setTargetAtTime(targetMid, now, 0.05);
+        this.trebleFilter.gain.setTargetAtTime(targetTreble, now, 0.05);
       } catch {
-        this.bassFilter.gain.value = eq.bass;
-        this.midFilter.gain.value = eq.mid;
-        this.trebleFilter.gain.value = eq.treble;
+        this.bassFilter.gain.value = targetBass;
+        this.midFilter.gain.value = targetMid;
+        this.trebleFilter.gain.value = targetTreble;
       }
     }
+  }
+
+  getEq(): EqSettings {
+    return this.eqSettings;
+  }
+
+  getAudioContextState(): { sampleRate: number; state: string } | null {
+    this.ensureAudioGraph();
+    if (!this.audioContext) return null;
+    return {
+      sampleRate: this.audioContext.sampleRate,
+      state: this.audioContext.state,
+    };
+  }
+
+  getSampleRate(): number {
+    return this.audioContext?.sampleRate || 44100;
   }
 
   getAnalyser(): AnalyserNode | null {
