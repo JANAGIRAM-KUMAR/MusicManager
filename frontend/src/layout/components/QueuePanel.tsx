@@ -21,15 +21,15 @@ export const QueuePanel = () => {
   const upcoming = queue.slice(currentIndex + 1);
 
   return (
-    <div className="flex h-full flex-col rounded-lg bg-zinc-900">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h2 className="text-sm font-bold">Queue</h2>
-        <div className="flex items-center gap-1">
+    <div className="flex h-full flex-col rounded-2xl glass-panel shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-white/5">
+        <h2 className="text-sm font-bold text-white">Queue</h2>
+        <div className="flex items-center gap-1.5">
           {upcoming.length > 0 && (
             <button
               type="button"
               onClick={clearQueue}
-              className="rounded px-2 py-1 text-xs text-zinc-400 transition hover:text-white"
+              className="glass-pill rounded-full px-2.5 py-1 text-xs text-zinc-300 transition hover:text-white"
             >
               Clear
             </button>
@@ -47,22 +47,22 @@ export const QueuePanel = () => {
 
       <ScrollArea className="min-h-0 flex-1 px-2">
         {currentSong && (
-          <section className="mb-4 px-2 pt-1">
+          <section className="mb-4 px-2 pt-3">
             <p className="mb-2 text-xs font-semibold text-zinc-400">Now playing</p>
-            <div className="flex items-center gap-3 rounded-md bg-white/5 p-2">
+            <div className="flex items-center gap-3 rounded-xl glass-card p-2.5 border border-white/10">
               <CoverImage
                 src={currentSong.imageUrl}
                 alt={currentSong.title}
                 fallbackLabel={currentSong.title}
-                className="size-11 rounded"
+                className="size-11 rounded-lg shrink-0 object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-emerald-400">{currentSong.title}</p>
+                <p className="truncate text-sm font-bold text-emerald-400">{currentSong.title}</p>
                 <p className="truncate text-xs text-zinc-400">{currentSong.artist}</p>
                 <Visualizer className="mt-1 h-3 w-14" bars={12} />
               </div>
               {isPlaying && (
-                <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
+                <span className="size-2 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
               )}
             </div>
           </section>
@@ -78,7 +78,7 @@ export const QueuePanel = () => {
               <p>Nothing queued. Pick a playlist or album to keep the music going.</p>
             </div>
           ) : (
-            <ul className="space-y-0.5 pb-4">
+            <ul className="space-y-1 pb-4">
               {upcoming.map((song, index) => {
                 const queueIndex = currentIndex + 1 + index;
                 return (
@@ -91,14 +91,14 @@ export const QueuePanel = () => {
                         if (event.key === "Enter") playSong(song);
                       }}
                       className={cn(
-                        "group flex cursor-pointer items-center gap-3 rounded-md p-1.5 transition hover:bg-white/10"
+                        "group flex cursor-pointer items-center gap-3 rounded-xl p-2 transition-all hover:bg-white/10 hover:backdrop-blur-md"
                       )}
                     >
                       <CoverImage
                         src={song.imageUrl}
                         alt={song.title}
                         fallbackLabel={song.title}
-                        className="size-10 rounded"
+                        className="size-10 rounded-lg shrink-0 object-cover"
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-white">{song.title}</p>

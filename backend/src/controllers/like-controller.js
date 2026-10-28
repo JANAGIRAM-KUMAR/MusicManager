@@ -9,7 +9,22 @@ const getLikedSongs = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .populate("songId", songProjection);
 
-    const songs = likes.filter((like) => like.songId).map((like) => like.songId);
+    const validLikes = [];
+    const orphanedIds = [];
+
+    for (const like of likes) {
+      if (like.songId) {
+        validLikes.push(like);
+      } else {
+        orphanedIds.push(like._id);
+      }
+    }
+
+    if (orphanedIds.length > 0) {
+      await Like.deleteMany({ _id: { $in: orphanedIds } });
+    }
+
+    const songs = validLikes.map((like) => like.songId);
     res.status(200).json(songs);
   } catch (error) {
     next(error);
@@ -18,8 +33,24 @@ const getLikedSongs = async (req, res, next) => {
 
 const getLikedSongIds = async (req, res, next) => {
   try {
-    const likes = await Like.find({ userId: req.userId }).select("songId");
-    res.status(200).json(likes.map((like) => like.songId.toString()));
+    const likes = await Like.find({ userId: req.userId }).populate("songId", "_id");
+
+    const validSongIds = [];
+    const orphanedIds = [];
+
+    for (const like of likes) {
+      if (like.songId) {
+        validSongIds.push(like.songId._id.toString());
+      } else {
+        orphanedIds.push(like._id);
+      }
+    }
+
+    if (orphanedIds.length > 0) {
+      await Like.deleteMany({ _id: { $in: orphanedIds } });
+    }
+
+    res.status(200).json(validSongIds);
   } catch (error) {
     next(error);
   }

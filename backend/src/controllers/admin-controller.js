@@ -1,6 +1,7 @@
 import Song from "../models/Song.js";
 import Album from "../models/Album.js";
 import Playlist from "../models/Playlist.js";
+import Like from "../models/Like.js";
 import cloudinary from '../lib/cloudinary.js';
 
 // helper function to upload files to cloudinary
@@ -110,6 +111,8 @@ const deleteSong = async (req, res, next) => {
         if(song.albumId){
             await Album.findByIdAndUpdate(song.albumId, {$pull: {songs: song._id}});
         }
+        await Playlist.updateMany({ songs: id }, { $pull: { songs: id } });
+        await Like.deleteMany({ songId: id });
         await Song.findByIdAndDelete(id);
         return res.status(200).json({success: true, message: 'Song deleted successfully'}); 
 

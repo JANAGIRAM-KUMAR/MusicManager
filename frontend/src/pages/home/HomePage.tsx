@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Play } from "lucide-react";
+import { Link } from "react-router-dom";
 import { SignInButton } from "@/components/SignInButton";
 import { Button } from "@/components/ui/button";
 import { CoverImage } from "@/components/CoverImage";
@@ -18,7 +17,6 @@ import type { Song } from "@/types";
 type CategoryFilter = "All" | "Music" | "Albums" | "Artists";
 
 const HomePage = () => {
-  const navigate = useNavigate();
   const isSignedIn = Boolean(useAuthStore((state) => state.user));
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("All");
 
@@ -36,7 +34,6 @@ const HomePage = () => {
   const { fetchArtists, artists } = useBrowseStore();
   const recentlyPlayed = useLibraryStore((state) => state.recentlyPlayed);
   const likedSongs = useLibraryStore((state) => state.likedSongs);
-  const playSongs = usePlayerStore((state) => state.playSongs);
   const playSong = usePlayerStore((state) => state.playSong);
 
   useEffect(() => {
@@ -83,7 +80,7 @@ const HomePage = () => {
     ));
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-emerald-600/20 via-zinc-900 to-zinc-900 pb-12">
+    <div className="min-h-full bg-gradient-to-b from-emerald-500/15 via-white/[0.01] to-transparent pb-16">
       <div className="px-3 pt-4 sm:px-6 sm:pt-6">
         {/* Category Pills (Spotify Mobile & Desktop standard) */}
         <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -92,10 +89,10 @@ const HomePage = () => {
               key={filter}
               onClick={() => setActiveFilter(filter)}
               className={cn(
-                "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 active:scale-95",
+                "px-4 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 active:scale-95",
                 activeFilter === filter
-                  ? "bg-white text-black shadow-sm"
-                  : "bg-white/10 text-white hover:bg-white/20"
+                  ? "bg-white text-black shadow-md font-bold"
+                  : "glass-pill text-white/90 hover:text-white"
               )}
             >
               {filter}
@@ -117,7 +114,7 @@ const HomePage = () => {
           </div>
           {!isSignedIn && (
             <SignInButton>
-              <Button size="sm" className="rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold px-4">
+              <Button size="sm" className="rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold px-4 shadow-md">
                 Sign in
               </Button>
             </SignInButton>
@@ -128,48 +125,22 @@ const HomePage = () => {
         {(activeFilter === "All" || activeFilter === "Music") && quickPicks.length > 0 && (
           <div className="mb-8 grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
             {quickPicks.map((pick) => (
-              <div
+              <Link
                 key={pick.id}
-                className="group relative flex items-center overflow-hidden rounded-md bg-white/10 transition-all hover:bg-white/20 shadow-sm"
+                to={pick.href}
+                className="group relative flex items-center overflow-hidden rounded-xl glass-card transition-all hover:bg-white/10 shadow-sm cursor-pointer"
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    const playable = pick.songs?.filter((s: any) => s && s.songUrl) || [];
-                    if (playable.length > 0) {
-                      playSongs(playable);
-                    } else if (pick.href) {
-                      navigate(pick.href);
-                    }
-                  }}
-                  className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-left"
-                >
-                  <CoverImage
-                    src={pick.imageUrl}
-                    alt={pick.title}
-                    fallbackLabel={pick.title}
-                    className="size-12 sm:size-16 shrink-0 object-cover shadow-sm"
-                  />
-                  <div className="min-w-0 flex-1 pr-1 sm:pr-2">
-                    <p className="truncate text-xs sm:text-sm font-bold text-white">{pick.title}</p>
-                    <p className="truncate text-[10px] sm:text-xs text-zinc-400 mt-0.5">{pick.subtitle}</p>
-                  </div>
-                </button>
-
-                {/* Quick Play Action */}
-                <button
-                  type="button"
-                  aria-label={`Play ${pick.title}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const playable = pick.songs?.filter((s: any) => s && s.songUrl) || [];
-                    if (playable.length > 0) playSongs(playable);
-                  }}
-                  className="mr-2 sm:mr-3 grid size-8 sm:size-9 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-105 active:scale-95 shrink-0 hidden sm:grid"
-                >
-                  <Play className="size-4 fill-current ml-0.5" />
-                </button>
-              </div>
+                <CoverImage
+                  src={pick.imageUrl}
+                  alt={pick.title}
+                  fallbackLabel={pick.title}
+                  className="size-12 sm:size-16 shrink-0 object-cover shadow-sm rounded-l-xl"
+                />
+                <div className="min-w-0 flex-1 px-3">
+                  <p className="truncate text-xs sm:text-sm font-bold text-white">{pick.title}</p>
+                  <p className="truncate text-[10px] sm:text-xs text-zinc-400 mt-0.5">{pick.subtitle}</p>
+                </div>
+              </Link>
             ))}
           </div>
         )}
@@ -226,14 +197,6 @@ const HomePage = () => {
                 subtitle={album.artist}
                 imageUrl={album.imageUrl}
                 href={`/albums/${album._id}`}
-                onPlay={
-                  (album.songs?.filter((s: any) => s && s.songUrl) || []).length > 0
-                    ? () => {
-                        const playable = album.songs?.filter((s: any) => s && s.songUrl) || [];
-                        if (playable.length > 0) playSongs(playable);
-                      }
-                    : undefined
-                }
                 className="w-[140px] shrink-0 sm:w-[170px]"
               />
             ))}

@@ -48,9 +48,9 @@ export const UserMenu = ({ showDetails = false }: UserMenuProps) => {
           <button
             type="button"
             aria-label="Open account menu"
-            className="flex items-center gap-2.5 rounded-full bg-zinc-900/90 border border-zinc-700/80 py-1 pl-1 pr-3 hover:bg-zinc-800 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 shadow-sm"
+            className="flex items-center gap-2.5 rounded-full glass-pill py-1 pl-1 pr-3 hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 shadow-sm"
           >
-            <Avatar className="size-8 border border-zinc-700">
+            <Avatar className="size-8 border border-white/20">
               <AvatarImage src={user?.imageUrl} alt={displayName} className="object-cover" />
               <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-bold text-xs">
                 {userInitials}
@@ -61,7 +61,7 @@ export const UserMenu = ({ showDetails = false }: UserMenuProps) => {
                 {displayName}
               </p>
               <div className="flex items-center gap-1 mt-0.5">
-                <span className="size-1.5 rounded-full bg-emerald-400" />
+                <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
                 <p className="text-[10px] text-emerald-400 font-medium leading-none">
                   {isAdmin ? "Admin" : "Listener"}
                 </p>
@@ -73,9 +73,9 @@ export const UserMenu = ({ showDetails = false }: UserMenuProps) => {
           <button
             type="button"
             aria-label="Open account menu"
-            className="rounded-full ring-emerald-400 transition hover:ring-2 focus-visible:ring-2 focus-visible:outline-none"
+            className="rounded-full ring-emerald-400 transition hover:ring-2 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
           >
-            <Avatar className="size-8 border border-zinc-700">
+            <Avatar className="size-8 border border-white/20">
               <AvatarImage src={user?.imageUrl} alt={displayName} className="object-cover" />
               <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-bold text-xs">
                 {userInitials}
@@ -85,10 +85,10 @@ export const UserMenu = ({ showDetails = false }: UserMenuProps) => {
         )}
       </DialogTrigger>
 
-      <DialogContent className="border-zinc-800 bg-zinc-950 text-white sm:max-w-sm p-6">
+      <DialogContent className="border-white/10 glass-dock text-white sm:max-w-sm p-6 rounded-2xl shadow-2xl">
         <DialogHeader>
           <div className="flex items-center gap-3.5">
-            <Avatar className="size-14 border border-zinc-700 shadow-md">
+            <Avatar className="size-14 border border-white/20 shadow-md">
               <AvatarImage src={user?.imageUrl} alt={displayName} className="object-cover" />
               <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-bold text-base">
                 {userInitials}
@@ -113,12 +113,12 @@ export const UserMenu = ({ showDetails = false }: UserMenuProps) => {
           </div>
         </DialogHeader>
 
-        <div className="space-y-2 mt-4 pt-3 border-t border-zinc-800/80">
+        <div className="space-y-2 mt-4 pt-3 border-t border-white/10">
           {isAdmin && (
             <Button
               asChild
               variant="secondary"
-              className="w-full justify-start bg-zinc-900 border border-zinc-800 text-white hover:bg-zinc-800 gap-2.5 text-xs h-9"
+              className="w-full justify-start glass-pill text-white hover:text-white gap-2.5 text-xs h-9"
             >
               <Link to="/admin" onClick={() => setOpen(false)}>
                 <LayoutDashboard className="size-4 text-emerald-400" />
@@ -130,7 +130,7 @@ export const UserMenu = ({ showDetails = false }: UserMenuProps) => {
           <Button
             type="button"
             variant="secondary"
-            className="w-full justify-start bg-zinc-900 border border-zinc-800 text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-2.5 text-xs h-9"
+            className="w-full justify-start glass-pill text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-2.5 text-xs h-9"
             onClick={() => void handleSignOut()}
           >
             <LogOut className="size-4" />

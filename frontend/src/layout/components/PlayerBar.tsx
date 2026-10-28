@@ -126,11 +126,11 @@ export const PlayerBar = () => {
         <div className="sm:hidden w-full">
           <div
             onClick={() => setMobileModalOpen(true)}
-            className="group relative flex items-center justify-between gap-3 p-2 bg-zinc-900/95 backdrop-blur-xl rounded-xl border border-zinc-800 shadow-2xl cursor-pointer active:scale-[0.99] transition overflow-hidden"
+            className="group relative flex items-center justify-between gap-3 p-2.5 glass-dock rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.65)] cursor-pointer active:scale-[0.99] transition overflow-hidden"
           >
             {/* Top progress indicator bar */}
             <div
-              className="absolute top-0 left-0 h-[2.5px] bg-emerald-400 transition-all duration-200"
+              className="absolute top-0 left-0 h-[2.5px] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-200"
               style={{
                 width: `${Math.min(100, ((progress || 0) / (duration || 1)) * 100)}%`,
               }}
@@ -184,7 +184,7 @@ export const PlayerBar = () => {
       )}
 
       {/* ---------------- DESKTOP FULL PLAYER BAR ---------------- */}
-      <footer className="hidden sm:flex h-[84px] shrink-0 items-center gap-3 rounded-xl bg-zinc-900/95 backdrop-blur-md px-3 text-white border border-zinc-800/80 shadow-md">
+      <footer className="hidden sm:flex h-[88px] shrink-0 items-center gap-3 rounded-2xl glass-dock px-4 text-white shadow-2xl">
         {/* Left: Song details */}
         <div className="flex min-w-0 flex-1 items-center gap-3 sm:w-[30%] sm:flex-none">
           {currentSong ? (
@@ -314,7 +314,7 @@ export const PlayerBar = () => {
                 <SlidersHorizontal className="size-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="border-zinc-800 bg-[#121212] text-white sm:max-w-md">
+            <DialogContent className="border-white/10 glass-dock text-white sm:max-w-md rounded-2xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle>Playback & Audio settings</DialogTitle>
                 <DialogDescription className="text-zinc-400">
@@ -341,7 +341,7 @@ export const PlayerBar = () => {
                   />
                 </div>
 
-                <div className="border-t border-zinc-800 pt-4">
+                <div className="border-t border-white/10 pt-4">
                   <div className="mb-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium">3-Band Equalizer</p>

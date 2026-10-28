@@ -57,7 +57,7 @@ export const MobileNav = () => {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="fixed inset-x-0 bottom-0 z-[60] lg:hidden bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-4 py-2 flex items-center justify-around select-none"
+      className="fixed inset-x-4 bottom-3 z-[60] lg:hidden glass-dock rounded-full px-3 py-1.5 flex items-center justify-around select-none shadow-[0_12px_40px_rgba(0,0,0,0.65)]"
     >
       {navItems.map((item) => {
         const Icon = item.icon;
@@ -68,16 +68,16 @@ export const MobileNav = () => {
             onClick={handleNavClick}
             onTouchStart={handleNavClick}
             className={cn(
-              "flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors min-w-[64px] active:scale-95 touch-manipulation",
+              "flex flex-col items-center gap-0.5 py-1 px-3.5 rounded-full transition-all min-w-[58px] active:scale-95 touch-manipulation",
               item.isActive
-                ? "text-emerald-400 font-semibold"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "text-emerald-400 font-bold bg-white/10 shadow-xs"
+                : "text-zinc-400 hover:text-white"
             )}
           >
             <div className="relative">
               <Icon className="size-5" />
               {item.isActive && (
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-emerald-400" />
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
               )}
             </div>
             <span className="text-[10px] tracking-tight">{item.label}</span>

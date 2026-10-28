@@ -68,13 +68,13 @@ const ArtistPage = () => {
   const artistPlaying = songs.some((song) => song._id === currentSong?._id);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-zinc-700/60 via-zinc-900 to-zinc-900 pb-10">
+    <div className="min-h-full bg-gradient-to-b from-teal-600/20 via-transparent to-transparent pb-16">
       <header className="relative flex min-h-[280px] flex-col items-center justify-end gap-6 overflow-hidden p-6 text-center sm:flex-row sm:items-end sm:text-left">
         <CoverImage
           src={artist.imageUrl}
           alt={artist.name}
           fallbackLabel={artist.name}
-          className="size-40 shrink-0 rounded-full shadow-2xl sm:size-52"
+          className="size-40 shrink-0 rounded-full shadow-2xl border-2 border-white/10 sm:size-52"
           iconClassName="size-10"
         />
         <div className="min-w-0">
@@ -82,7 +82,7 @@ const ArtistPage = () => {
             <BadgeCheck className="size-4 fill-sky-400 text-sky-950" />
             Verified artist
           </p>
-          <h1 className="mt-2 text-4xl leading-none font-black tracking-tight break-words sm:text-6xl lg:text-7xl">
+          <h1 className="mt-2 text-4xl leading-none font-black tracking-tight break-words sm:text-6xl lg:text-7xl text-white">
             {artist.name}
           </h1>
           <p className="mt-4 text-sm text-zinc-300">
@@ -100,7 +100,7 @@ const ArtistPage = () => {
             else playSongs(songs, 0);
           }}
           size="icon"
-          className="size-14 rounded-full bg-emerald-500 text-black shadow-xl transition hover:scale-105 hover:bg-emerald-400"
+          className="size-14 rounded-full bg-emerald-500 text-black shadow-xl shadow-emerald-500/30 transition hover:scale-105 hover:bg-emerald-400 active:scale-95"
           aria-label={artistPlaying && isPlaying ? "Pause artist" : "Play artist"}
         >
           {artistPlaying && isPlaying ? (
@@ -119,7 +119,7 @@ const ArtistPage = () => {
               playSongs(songs, Math.floor(Math.random() * songs.length));
             }
           }}
-          className="text-zinc-400 transition hover:text-white disabled:opacity-40"
+          className="glass-pill p-3 rounded-full text-zinc-300 hover:text-white disabled:opacity-40"
         >
           <Shuffle className="size-6" />
         </button>
@@ -153,7 +153,6 @@ const ArtistPage = () => {
                   subtitle={album.releaseDate?.split("-")[0] ?? album.artist}
                   imageUrl={album.imageUrl}
                   href={`/albums/${album._id}`}
-                  onPlay={album.songs.length ? () => playSongs(album.songs) : undefined}
                   className="w-[160px] shrink-0 sm:w-[180px]"
                 />
               ))}

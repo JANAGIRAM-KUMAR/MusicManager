@@ -44,7 +44,7 @@ export const LyricsPreviewCard = ({ onExpand, className }: LyricsPreviewCardProp
         }
       }}
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950/60 via-zinc-900/90 to-black p-5 border border-emerald-500/20 shadow-xl cursor-pointer active:scale-[0.99] transition-all hover:border-emerald-500/40 group",
+        "relative overflow-hidden rounded-2xl glass-card bg-emerald-950/25 p-5 border border-emerald-500/25 shadow-xl cursor-pointer active:scale-[0.99] transition-all hover:border-emerald-500/40 group",
         className
       )}
     >
@@ -59,7 +59,7 @@ export const LyricsPreviewCard = ({ onExpand, className }: LyricsPreviewCardProp
             Lyrics
           </span>
         </div>
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-zinc-400 group-hover:text-white transition rounded-full bg-white/5 px-2.5 py-1">
+        <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-300 group-hover:text-white transition rounded-full glass-pill px-3 py-1">
           <span>Full screen</span>
           <Maximize2 className="size-3" />
         </span>

@@ -57,8 +57,13 @@ const MainLayout = () => {
   }, [fetchLibrary, isSignedIn, resetLibrary]);
 
   return (
-    <div className="flex h-[100dvh] flex-col gap-1 bg-black text-white sm:gap-2 sm:p-2 overflow-hidden">
-      <div className="flex min-h-0 flex-1 gap-2 overflow-hidden">
+    <div className="relative flex h-[100dvh] flex-col gap-1 bg-[#08090d] text-white sm:gap-2 sm:p-2 overflow-hidden">
+      {/* Apple Ambient Fluid Mesh Atmosphere */}
+      <div className="pointer-events-none fixed -top-48 -left-48 size-[560px] rounded-full bg-emerald-500/12 blur-[140px]" />
+      <div className="pointer-events-none fixed top-1/3 -right-48 size-[600px] rounded-full bg-indigo-600/10 blur-[160px]" />
+      <div className="pointer-events-none fixed -bottom-48 left-1/3 size-[520px] rounded-full bg-teal-500/10 blur-[150px]" />
+
+      <div className="relative z-10 flex min-h-0 flex-1 gap-2 overflow-hidden">
         {/* Desktop Left Sidebar */}
         {isSignedIn && (
           <aside className="hidden w-[280px] shrink-0 lg:block">
@@ -67,7 +72,7 @@ const MainLayout = () => {
         )}
 
         {/* Central Viewport */}
-        <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-none bg-zinc-900 sm:rounded-xl">
+        <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-none sm:rounded-2xl glass-panel shadow-2xl">
           <Topbar />
           <div className="min-h-0 flex-1 overflow-y-auto pb-36 sm:pb-6">
             <Outlet />
@@ -80,10 +85,10 @@ const MainLayout = () => {
             <button
               type="button"
               aria-label="Close queue"
-              className="fixed inset-0 z-40 cursor-default bg-black/70 lg:hidden backdrop-blur-xs"
+              className="fixed inset-0 z-40 cursor-default bg-black/60 lg:hidden backdrop-blur-sm"
               onClick={() => setQueueOpen(false)}
             />
-            <aside className="fixed inset-x-2 bottom-[130px] top-4 z-40 sm:inset-auto sm:top-2 sm:right-2 sm:bottom-[96px] sm:w-[340px] lg:static lg:z-auto lg:w-[360px] lg:shrink-0 lg:bottom-auto">
+            <aside className="fixed inset-x-2 bottom-[130px] top-4 z-40 sm:inset-auto sm:top-2 sm:right-2 sm:bottom-[96px] sm:w-[340px] lg:static lg:z-auto lg:w-[360px] lg:shrink-0 lg:bottom-auto rounded-2xl overflow-hidden glass-panel">
               <QueuePanel />
             </aside>
           </>
@@ -91,7 +96,7 @@ const MainLayout = () => {
       </div>
 
       {/* Player Bar Container: Fixed floating on mobile, standard bottom dock on tablet/desktop */}
-      <div className={`fixed sm:static ${currentSong ? 'bottom-[64px]' : 'hidden sm:block'} inset-x-2 z-30 sm:z-auto sm:inset-auto px-0 sm:px-0`}>
+      <div className={`fixed sm:static ${currentSong ? 'bottom-[74px] sm:bottom-auto' : 'hidden sm:block'} inset-x-3 sm:inset-auto z-30 sm:z-auto px-0`}>
         <PlayerBar />
       </div>
 

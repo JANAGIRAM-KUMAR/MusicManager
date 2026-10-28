@@ -48,14 +48,14 @@ const LikedSongsPage = () => {
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-indigo-500/40 via-zinc-900 to-zinc-900 pb-10">
+    <div className="min-h-full bg-gradient-to-b from-indigo-500/25 via-transparent to-transparent pb-16">
       <header className="flex flex-col items-center gap-6 p-6 text-center sm:flex-row sm:items-end sm:text-left">
-        <div className="grid size-44 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-400 shadow-2xl sm:size-52">
-          <Heart className="size-16 fill-white text-white" />
+        <div className="grid size-44 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-400 shadow-2xl border border-white/10 sm:size-52">
+          <Heart className="size-16 fill-white text-white drop-shadow-md" />
         </div>
         <div>
-          <p className="text-xs font-semibold tracking-wide uppercase">Playlist</p>
-          <h1 className="mt-2 text-4xl leading-none font-black tracking-tight sm:text-6xl">
+          <p className="text-xs font-semibold tracking-wide uppercase text-zinc-400">Playlist</p>
+          <h1 className="mt-2 text-4xl leading-none font-black tracking-tight sm:text-6xl text-white">
             Liked Songs
           </h1>
           <p className="mt-4 text-sm text-zinc-300">
@@ -72,7 +72,7 @@ const LikedSongsPage = () => {
             else playSongs(likedSongs, 0);
           }}
           size="icon"
-          className="size-14 rounded-full bg-emerald-500 text-black shadow-xl transition hover:scale-105 hover:bg-emerald-400"
+          className="size-14 rounded-full bg-emerald-500 text-black shadow-xl shadow-emerald-500/30 transition hover:scale-105 hover:bg-emerald-400 active:scale-95"
           aria-label={playlistPlaying && isPlaying ? "Pause liked songs" : "Play liked songs"}
         >
           {playlistPlaying && isPlaying ? (
@@ -91,9 +91,9 @@ const LikedSongsPage = () => {
               playSongs(likedSongs, Math.floor(Math.random() * likedSongs.length));
             }
           }}
-          className="text-zinc-400 transition hover:text-white disabled:opacity-40"
+          className="glass-pill p-3 rounded-full text-zinc-300 hover:text-white disabled:opacity-40"
         >
-          <Shuffle className="size-6" />
+          <Shuffle className="size-5" />
         </button>
       </div>
 

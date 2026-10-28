@@ -3,11 +3,17 @@ import Playlist from "../models/Playlist.js";
 import Like from "../models/Like.js";
 import PlayHistory from "../models/PlayHistory.js";
 
-const adminEmails = () =>
-  (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")
-    .split(/[\s,]+/)
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
+const adminEmails = () => {
+  const combined = `${process.env.ADMIN_EMAILS || ""} ${process.env.ADMIN_EMAIL || ""}`;
+  return Array.from(
+    new Set(
+      combined
+        .split(/[\s,;]+/)
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+};
 
 export const getAllUsersAdmin = async (req, res, next) => {
   try {

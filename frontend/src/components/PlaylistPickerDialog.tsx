@@ -53,7 +53,7 @@ export const PlaylistPickerDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-zinc-800 bg-zinc-950 text-white sm:max-w-md">
+      <DialogContent className="border-white/10 glass-dock text-white sm:max-w-md rounded-2xl shadow-2xl">
         <DialogHeader>
           <DialogTitle>Add to playlist</DialogTitle>
           <DialogDescription className="text-zinc-400">
@@ -82,7 +82,7 @@ export const PlaylistPickerDialog = ({
             <button
               key={playlist._id}
               type="button"
-              className="flex w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-zinc-800"
+              className="flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition hover:bg-white/10"
               onClick={() => {
                 if (!song) return;
                 void addSongToPlaylist(playlist._id, song._id);
@@ -93,15 +93,15 @@ export const PlaylistPickerDialog = ({
                 src={playlist.imageUrl}
                 alt={playlist.title}
                 fallbackLabel={playlist.title}
-                className="size-10 shrink-0 rounded"
+                className="size-10 shrink-0 rounded-lg shadow-sm"
               />
-              <span className="min-w-0 flex-1 truncate text-sm">{playlist.title}</span>
-              <ListMusic className="size-4 text-zinc-500" />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{playlist.title}</span>
+              <ListMusic className="size-4 text-zinc-400" />
             </button>
           ))}
         </div>
 
-        <div className="border-t border-zinc-800 pt-4">
+        <div className="border-t border-white/10 pt-4">
           <div className="flex gap-2">
             <Input
               value={title}
@@ -110,9 +110,13 @@ export const PlaylistPickerDialog = ({
                 if (event.key === "Enter") void handleCreate();
               }}
               placeholder="New playlist name"
-              className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+              className="border-white/15 bg-white/5 rounded-xl text-white placeholder:text-zinc-500 focus:border-white/30"
             />
-            <Button onClick={() => void handleCreate()} disabled={!title.trim()}>
+            <Button
+              className="rounded-xl bg-white text-black hover:bg-zinc-200 font-semibold"
+              onClick={() => void handleCreate()}
+              disabled={!title.trim()}
+            >
               <Plus className="size-4" />
               Create
             </Button>

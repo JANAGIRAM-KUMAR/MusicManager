@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Play } from "lucide-react";
 import toast from "react-hot-toast";
 import { CoverImage } from "@/components/CoverImage";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -32,34 +31,14 @@ export const MediaCard = ({
           alt={title}
           fallbackLabel={title}
           className={cn(
-            "aspect-square w-full shadow-lg",
-            round ? "rounded-full" : "rounded-md"
+            "aspect-square w-full shadow-lg transition-transform duration-300 group-hover:scale-[1.02]",
+            round ? "rounded-full" : "rounded-xl"
           )}
         />
-        {onPlay && (
-          <button
-            type="button"
-            aria-label={`Play ${title}`}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              const user = useAuthStore.getState().user;
-              if (!user) {
-                toast.error("Log in to listen");
-                useAuthStore.getState().openSignIn?.();
-                return;
-              }
-              onPlay?.();
-            }}
-            className="absolute right-2 bottom-2 grid size-10 sm:size-11 translate-y-2 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 hover:scale-105 hover:bg-emerald-400 active:scale-95"
-          >
-            <Play className="size-4.5 sm:size-5 fill-current ml-0.5" />
-          </button>
-        )}
       </div>
-      <p className={cn("truncate font-semibold text-white", round && "text-center")}>{title}</p>
+      <p className={cn("truncate font-semibold text-white text-xs sm:text-sm", round && "text-center")}>{title}</p>
       {subtitle && (
-        <p className={cn("mt-1 line-clamp-2 text-xs text-zinc-400", round && "text-center")}>
+        <p className={cn("mt-1 line-clamp-2 text-[11px] sm:text-xs text-zinc-400", round && "text-center")}>
           {subtitle}
         </p>
       )}
@@ -71,7 +50,7 @@ export const MediaCard = ({
       <Link
         to={href}
         className={cn(
-          "group block rounded-lg p-3 transition hover:bg-white/10",
+          "group block rounded-2xl p-3 glass-card hover:bg-white/10 transition-all duration-300",
           className
         )}
       >
@@ -107,7 +86,11 @@ export const MediaCard = ({
           onPlay();
         }
       }}
-      className={cn("group block rounded-lg p-3 transition hover:bg-white/10", onPlay && "cursor-pointer", className)}
+      className={cn(
+        "group block rounded-2xl p-3 glass-card hover:bg-white/10 transition-all duration-300",
+        onPlay && "cursor-pointer",
+        className
+      )}
     >
       {content}
     </div>

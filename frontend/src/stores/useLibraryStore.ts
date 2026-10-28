@@ -69,9 +69,14 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
         axiosInstance.get("/likes"),
         axiosInstance.get("/likes/ids"),
       ]);
+      const songs: Song[] = Array.isArray(songsResponse.data) ? songsResponse.data : [];
+      const rawIds: string[] = Array.isArray(idsResponse.data) ? idsResponse.data : [];
+      // Ensure IDs only include songs that actually exist in the library
+      const songIdSet = new Set(songs.map((s) => s._id));
+      const validIds = rawIds.filter((id) => songIdSet.has(id));
       set({
-        likedSongs: songsResponse.data,
-        likedSongIds: idsResponse.data,
+        likedSongs: songs,
+        likedSongIds: validIds.length === songs.length ? validIds : songs.map((s) => s._id),
       });
     } catch (error) {
       set({ error });

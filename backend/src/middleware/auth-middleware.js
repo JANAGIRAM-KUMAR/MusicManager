@@ -7,11 +7,17 @@ import {
   verifySessionToken,
 } from "../lib/session.js";
 
-const adminEmails = () =>
-  (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")
-    .split(/[\s,]+/)
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
+const adminEmails = () => {
+  const combined = `${process.env.ADMIN_EMAILS || ""} ${process.env.ADMIN_EMAIL || ""}`;
+  return Array.from(
+    new Set(
+      combined
+        .split(/[\s,;]+/)
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+};
 
 const publicUser = (user) => ({
   _id: user._id.toString(),

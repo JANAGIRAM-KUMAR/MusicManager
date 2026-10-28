@@ -67,16 +67,16 @@ const AlbumPage = () => {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-emerald-600/30 via-zinc-900 to-zinc-900 pb-10">
+    <div className="min-h-full bg-gradient-to-b from-emerald-500/20 via-transparent to-transparent pb-16">
       <header className="flex flex-col items-center gap-6 p-6 text-center sm:flex-row sm:items-end sm:text-left">
         <CoverImage
           src={currentAlbum.imageUrl}
           alt={currentAlbum.title}
           fallbackLabel={currentAlbum.title}
-          className="size-44 shrink-0 rounded-lg shadow-2xl sm:size-52"
+          className="size-44 shrink-0 rounded-2xl shadow-2xl border border-white/10 sm:size-52"
         />
         <div className="min-w-0">
-          <p className="text-xs font-semibold tracking-wide uppercase">Album</p>
+          <p className="text-xs font-semibold tracking-wide uppercase text-zinc-400">Album</p>
           <h1 className="mt-2 text-4xl leading-none font-black tracking-tight text-white sm:text-6xl">
             {currentAlbum.title}
           </h1>
@@ -102,7 +102,7 @@ const AlbumPage = () => {
           disabled={(songs?.filter((song: any) => song && song.songUrl) || []).length === 0}
           onClick={handlePlay}
           size="icon"
-          className="size-14 rounded-full bg-emerald-500 text-black shadow-xl transition hover:scale-105 hover:bg-emerald-400"
+          className="size-14 rounded-full bg-emerald-500 text-black shadow-xl shadow-emerald-500/30 transition hover:scale-105 hover:bg-emerald-400 active:scale-95"
           aria-label={albumPlaying && isPlaying ? "Pause album" : "Play album"}
         >
           {albumPlaying && isPlaying ? (
@@ -116,9 +116,9 @@ const AlbumPage = () => {
           aria-label="Shuffle play album"
           disabled={(songs?.filter((song: any) => song && song.songUrl) || []).length === 0}
           onClick={handleShuffle}
-          className="text-zinc-400 transition hover:text-white disabled:opacity-40"
+          className="glass-pill p-3 rounded-full text-zinc-300 hover:text-white disabled:opacity-40"
         >
-          <Shuffle className="size-6" />
+          <Shuffle className="size-5" />
         </button>
       </div>
 

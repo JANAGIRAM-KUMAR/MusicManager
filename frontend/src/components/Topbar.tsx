@@ -26,12 +26,12 @@ const SearchBox = ({ initialQuery }: { initialQuery: string }) => {
 
   return (
     <form onSubmit={submit} className="relative mx-auto w-full max-w-[480px]">
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
+      <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-zinc-400" />
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="What do you want to play?"
-        className="h-10 w-full rounded-full border border-transparent bg-zinc-800 pr-9 pl-9 text-sm text-white placeholder:text-zinc-400 focus:border-white/40 focus:outline-none"
+        className="h-10 w-full rounded-full border border-white/10 bg-white/5 pr-9 pl-10 text-sm text-white placeholder:text-zinc-400 focus:border-white/30 focus:bg-white/10 focus:outline-none backdrop-blur-xl transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
       />
       {query && (
         <button
@@ -63,14 +63,14 @@ const Topbar = () => {
       : "";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-2 bg-zinc-900/80 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3 sm:justify-start">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-2 bg-black/20 backdrop-blur-2xl border-b border-white/5 px-3 py-2.5 sm:px-6 sm:py-3 sm:justify-start">
       {/* ---------------- MOBILE HOME SCREEN: Logo + Soundwave Name on Left ---------------- */}
       {isHome ? (
         <Link
           to="/"
           className="flex items-center gap-2.5 text-white sm:hidden active:scale-95 transition"
         >
-          <div className="grid size-8 place-items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-xs">
+          <div className="grid size-8 place-items-center rounded-full bg-emerald-500/15 border border-emerald-500/30 shadow-xs">
             <AudioLines className="size-5 text-emerald-400" />
           </div>
           <span className="text-lg font-black tracking-tight text-white">Soundwave</span>
@@ -82,7 +82,7 @@ const Topbar = () => {
             type="button"
             aria-label="Go back"
             onClick={() => navigate(-1)}
-            className="grid size-8 place-items-center rounded-full bg-black/60 text-zinc-300 transition hover:text-white"
+            className="grid size-8 place-items-center rounded-full bg-white/5 border border-white/10 text-zinc-300 transition hover:bg-white/10 hover:text-white active:scale-95"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -93,12 +93,12 @@ const Topbar = () => {
       )}
 
       {/* ---------------- DESKTOP NAVIGATION CHEVRONS ---------------- */}
-      <div className="hidden sm:flex items-center gap-1">
+      <div className="hidden sm:flex items-center gap-1.5">
         <button
           type="button"
           aria-label="Go back"
           onClick={() => navigate(-1)}
-          className="grid size-8 place-items-center rounded-full bg-black/60 text-zinc-300 transition hover:text-white"
+          className="grid size-8 place-items-center rounded-full bg-white/5 border border-white/10 text-zinc-300 transition hover:bg-white/15 hover:text-white active:scale-95 shadow-xs"
         >
           <ChevronLeft className="size-4" />
         </button>
@@ -106,7 +106,7 @@ const Topbar = () => {
           type="button"
           aria-label="Go forward"
           onClick={() => navigate(1)}
-          className="grid size-8 place-items-center rounded-full bg-black/60 text-zinc-300 transition hover:text-white"
+          className="grid size-8 place-items-center rounded-full bg-white/5 border border-white/10 text-zinc-300 transition hover:bg-white/15 hover:text-white active:scale-95 shadow-xs"
         >
           <ChevronRight className="size-4" />
         </button>

@@ -192,9 +192,9 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-zinc-800 via-zinc-900 to-zinc-950 pb-20 text-white">
+    <div className="min-h-full bg-gradient-to-b from-white/[0.02] via-transparent to-transparent pb-24 text-white">
       {/* Sticky Hero Search Bar */}
-      <div className="sticky top-0 z-20 bg-zinc-900/90 backdrop-blur-xl border-b border-white/5 px-4 py-4 sm:px-6">
+      <div className="sticky top-0 z-20 glass-thin backdrop-blur-2xl border-b border-white/10 px-4 py-3.5 sm:px-6">
         <div className="mx-auto max-w-4xl space-y-3">
           <div className="relative">
             <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-zinc-400" />
@@ -203,7 +203,7 @@ const SearchPage = () => {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="What do you want to play? (Search your artists, songs, or albums)"
-              className="h-12 w-full rounded-full border border-white/10 bg-zinc-800/90 pr-12 pl-12 text-sm sm:text-base text-white placeholder:text-zinc-400 focus:border-emerald-500 focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
+              className="h-12 w-full rounded-full border border-white/15 bg-white/5 backdrop-blur-md pr-12 pl-12 text-sm sm:text-base text-white placeholder:text-zinc-400 focus:border-white/30 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 transition-all shadow-inner"
             />
             {input && (
               <button
@@ -229,7 +229,7 @@ const SearchPage = () => {
                   key={tag}
                   type="button"
                   onClick={() => handleSelectQuery(tag)}
-                  className="shrink-0 rounded-full bg-zinc-800/80 px-3 py-1 hover:bg-zinc-700 hover:text-white transition border border-white/5 truncate max-w-[200px]"
+                  className="shrink-0 rounded-full glass-pill px-3 py-1 text-zinc-300 hover:text-white transition truncate max-w-[200px]"
                 >
                   {tag}
                 </button>
@@ -247,7 +247,7 @@ const SearchPage = () => {
                   "rounded-full px-4 py-1.5 text-xs font-semibold transition shrink-0",
                   activeFilter === "all"
                     ? "bg-white text-black shadow-md shadow-white/10"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    : "glass-pill text-zinc-300 hover:text-white"
                 )}
               >
                 All
@@ -259,7 +259,7 @@ const SearchPage = () => {
                   "rounded-full px-4 py-1.5 text-xs font-semibold transition shrink-0",
                   activeFilter === "songs"
                     ? "bg-white text-black shadow-md shadow-white/10"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    : "glass-pill text-zinc-300 hover:text-white"
                 )}
               >
                 Songs ({results.songs.length})
@@ -271,7 +271,7 @@ const SearchPage = () => {
                   "rounded-full px-4 py-1.5 text-xs font-semibold transition shrink-0",
                   activeFilter === "artists"
                     ? "bg-white text-black shadow-md shadow-white/10"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    : "glass-pill text-zinc-300 hover:text-white"
                 )}
               >
                 Artists ({results.artists.length})
@@ -283,7 +283,7 @@ const SearchPage = () => {
                   "rounded-full px-4 py-1.5 text-xs font-semibold transition shrink-0",
                   activeFilter === "albums"
                     ? "bg-white text-black shadow-md shadow-white/10"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    : "glass-pill text-zinc-300 hover:text-white"
                 )}
               >
                 Albums ({results.albums.length})
@@ -316,7 +316,7 @@ const SearchPage = () => {
                   {recentSearches.map((term) => (
                     <div
                       key={term}
-                      className="group flex items-center gap-1.5 rounded-full bg-zinc-800/90 pl-3.5 pr-2 py-1.5 text-xs text-zinc-200 border border-white/5 hover:border-white/20 transition"
+                      className="group flex items-center gap-1.5 rounded-full glass-pill pl-3.5 pr-2 py-1.5 text-xs text-zinc-200 hover:border-white/20 transition"
                     >
                       <button
                         type="button"
@@ -364,7 +364,7 @@ const SearchPage = () => {
                       key={album._id}
                       to={`/albums/${album._id}`}
                       className={cn(
-                        "group relative h-32 sm:h-36 overflow-hidden rounded-xl p-3 sm:p-4 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-black/50 select-none bg-gradient-to-br block",
+                        "group relative h-32 sm:h-36 overflow-hidden rounded-2xl p-3 sm:p-4 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl border border-white/10 select-none bg-gradient-to-br block",
                         GRADIENT_PALETTES[idx % GRADIENT_PALETTES.length]
                       )}
                     >
@@ -383,7 +383,7 @@ const SearchPage = () => {
                       </div>
 
                       {/* 3D Rotated Real Album Cover Artwork */}
-                      <div className="pointer-events-none absolute -bottom-3 -right-3 size-16 sm:size-20 transform rotate-[25deg] transition-all duration-300 group-hover:rotate-[15deg] group-hover:scale-110 shadow-2xl rounded-md overflow-hidden border border-white/10">
+                      <div className="pointer-events-none absolute -bottom-3 -right-3 size-16 sm:size-20 transform rotate-[25deg] transition-all duration-300 group-hover:rotate-[15deg] group-hover:scale-110 shadow-2xl rounded-xl overflow-hidden border border-white/15">
                         <img
                           src={album.imageUrl}
                           alt={album.title}
@@ -401,7 +401,7 @@ const SearchPage = () => {
                       type="button"
                       onClick={() => handleSelectQuery(artist.name)}
                       className={cn(
-                        "group relative h-32 sm:h-36 overflow-hidden rounded-xl p-3 sm:p-4 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-black/50 select-none bg-gradient-to-br text-left w-full",
+                        "group relative h-32 sm:h-36 overflow-hidden rounded-2xl p-3 sm:p-4 cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl border border-white/10 select-none bg-gradient-to-br text-left w-full",
                         GRADIENT_PALETTES[(idx + albums.length) % GRADIENT_PALETTES.length]
                       )}
                     >
@@ -638,7 +638,6 @@ const SearchPage = () => {
                           subtitle={album.artist}
                           imageUrl={album.imageUrl}
                           href={`/albums/${album._id}`}
-                          onPlay={album.songs.length ? () => playSongs(album.songs) : undefined}
                           className="bg-zinc-900/60 hover:bg-zinc-800/80 p-3 rounded-xl transition border border-white/5"
                         />
                       ))}
@@ -705,7 +704,6 @@ const SearchPage = () => {
                       subtitle={album.artist}
                       imageUrl={album.imageUrl}
                       href={`/albums/${album._id}`}
-                      onPlay={album.songs.length ? () => playSongs(album.songs) : undefined}
                       className="bg-zinc-900/60 hover:bg-zinc-800/80 p-4 rounded-xl transition border border-white/5"
                     />
                   ))}

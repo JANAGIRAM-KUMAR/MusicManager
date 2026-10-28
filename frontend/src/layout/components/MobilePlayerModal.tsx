@@ -51,13 +51,16 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
   const displayProgress = scrub ?? progress;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-zinc-900 via-zinc-950 to-black p-6 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-0 z-50 flex flex-col glass-dock backdrop-blur-3xl bg-[#08090d]/85 p-6 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
+      {/* Dynamic ambient orb behind album */}
+      <div className="pointer-events-none fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 size-72 rounded-full bg-emerald-500/20 blur-[100px]" />
+
       {/* Top Bar with Dismiss */}
-      <div className="flex items-center justify-between pb-4">
+      <div className="relative z-10 flex items-center justify-between pb-4">
         <button
           type="button"
           onClick={onClose}
-          className="size-10 grid place-items-center rounded-full hover:bg-white/10 text-zinc-300"
+          className="size-10 grid place-items-center rounded-full glass-pill text-zinc-300 hover:text-white"
           aria-label="Minimize player"
         >
           <ChevronDown className="size-6" />
@@ -67,7 +70,7 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
           <p className="text-[10px] tracking-wider uppercase text-zinc-400 font-semibold">
             Playing Song
           </p>
-          <p className="text-xs font-medium text-white truncate max-w-[200px]">
+          <p className="text-xs font-bold text-white truncate max-w-[200px]">
             {currentSong.title}
           </p>
         </div>
@@ -78,7 +81,7 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
             onClose();
             toggleQueue();
           }}
-          className="size-10 grid place-items-center rounded-full hover:bg-white/10 text-zinc-300"
+          className="size-10 grid place-items-center rounded-full glass-pill text-zinc-300 hover:text-white"
           aria-label="Open queue"
         >
           <ListMusic className="size-5" />
@@ -86,19 +89,19 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
       </div>
 
       {/* Album Artwork */}
-      <div className="my-auto py-4 flex justify-center">
-        <div className="relative aspect-square w-full max-w-[320px] rounded-2xl overflow-hidden shadow-2xl shadow-emerald-500/10 border border-white/5">
+      <div className="relative z-10 my-auto py-4 flex justify-center">
+        <div className="relative aspect-square w-full max-w-[320px] rounded-3xl overflow-hidden shadow-2xl border border-white/10 glass-card p-1">
           <CoverImage
             src={currentSong.imageUrl}
             alt={currentSong.title}
             fallbackLabel={currentSong.title}
-            className="size-full object-cover"
+            className="size-full object-cover rounded-2xl"
           />
         </div>
       </div>
 
       {/* Song Details & Like */}
-      <div className="pt-4 pb-2">
+      <div className="relative z-10 pt-4 pb-2">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold text-white truncate">{currentSong.title}</h2>
@@ -198,14 +201,14 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
         </div>
 
         {/* Footer Actions: Lyrics & Settings */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80">
+        <div className="flex items-center justify-between pt-3 border-t border-white/10">
           <button
             type="button"
             onClick={() => {
               onClose();
               setLyricsOpen(true);
             }}
-            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-3 py-2 rounded-full bg-white/5 active:scale-95 transition"
+            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-full glass-pill active:scale-95 transition"
           >
             <Mic2 className="size-4 text-emerald-400" />
             <span>Lyrics</span>
@@ -214,7 +217,7 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
           <button
             type="button"
             onClick={() => setEqOpen(true)}
-            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-3 py-2 rounded-full bg-white/5"
+            className="flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-full glass-pill active:scale-95 transition"
           >
             <SlidersHorizontal className="size-4 text-emerald-400" />
             <span>Audio FX</span>
@@ -224,7 +227,7 @@ export const MobilePlayerModal = ({ open, onClose }: MobilePlayerModalProps) => 
 
       {/* Audio FX Dialog */}
       <Dialog open={eqOpen} onOpenChange={setEqOpen}>
-        <DialogContent className="border-zinc-800 bg-zinc-950 text-white max-w-sm">
+        <DialogContent className="border-white/10 glass-dock text-white max-w-sm rounded-2xl shadow-2xl">
           <DialogHeader>
             <DialogTitle>Playback & Audio Settings</DialogTitle>
             <DialogDescription className="text-zinc-400 text-xs">

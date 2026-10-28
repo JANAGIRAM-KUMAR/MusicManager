@@ -8,7 +8,17 @@ import {
   sessionCookieOptions,
 } from "../lib/session.js";
 
-const adminEmail = () => (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+const adminEmails = () => {
+  const combined = `${process.env.ADMIN_EMAILS || ""} ${process.env.ADMIN_EMAIL || ""}`;
+  return Array.from(
+    new Set(
+      combined
+        .split(/[\s,;]+/)
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+};
 
 const publicUser = (user) => ({
   _id: user._id.toString(),
@@ -18,8 +28,10 @@ const publicUser = (user) => ({
   createdAt: user.createdAt,
 });
 
-const isAdmin = (user) =>
-  Boolean(user?.email && user.email.toLowerCase() === adminEmail());
+const isAdmin = (user) => {
+  const email = (user?.email ?? "").trim().toLowerCase();
+  return Boolean(email && adminEmails().includes(email));
+};
 
 const googleLogin = async (req, res, next) => {
   try {

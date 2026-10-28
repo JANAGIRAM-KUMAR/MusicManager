@@ -55,16 +55,16 @@ export const SongRow = ({
           }
         }}
         className={cn(
-          "group grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-md px-2 py-1.5 text-sm text-zinc-400 transition hover:bg-white/10 sm:grid-cols-[2rem_4fr_2fr_auto]",
-          isActive && "bg-white/5",
+          "group grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-zinc-400 transition-all duration-200 hover:bg-white/8 hover:backdrop-blur-md sm:grid-cols-[2rem_4fr_2fr_auto]",
+          isActive && "bg-white/10 shadow-xs border border-white/5",
           className
         )}
       >
         <div className="flex w-8 items-center justify-center text-right">
-          <span className={cn("text-xs tabular-nums group-hover:hidden", isActive && "hidden text-emerald-400")}>
+          <span className={cn("text-xs tabular-nums group-hover:hidden", isActive && "hidden text-emerald-400 font-bold")}>
             {index === undefined ? "" : index + 1}
           </span>
-          <span className={cn("hidden group-hover:block", isActive && "block")}>
+          <span className={cn("hidden group-hover:block", isActive && "block text-emerald-400")}>
             {isActive && isPlaying ? (
               <Pause className="size-3.5 fill-current" />
             ) : (
@@ -78,7 +78,7 @@ export const SongRow = ({
             src={song.imageUrl}
             alt={song.title}
             fallbackLabel={song.title}
-            className="size-10 shrink-0 rounded"
+            className="size-10 shrink-0 rounded-lg shadow-xs"
           />
           <div className="min-w-0">
             <p className={cn("truncate font-medium text-white", isActive && "text-emerald-400")}>

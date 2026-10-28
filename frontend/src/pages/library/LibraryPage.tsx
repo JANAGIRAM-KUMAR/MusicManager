@@ -67,13 +67,13 @@ const LibraryPage = () => {
   const listPlaying = source.some((song) => song._id === currentSong?._id);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-zinc-800 via-zinc-900 to-zinc-900 pb-10">
+    <div className="min-h-full bg-gradient-to-b from-white/[0.02] via-transparent to-transparent pb-16">
       <div className="px-4 pt-5 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your Library</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Your Library</h1>
           <Link
             to="/search"
-            className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+            className="flex items-center gap-2 rounded-full glass-pill px-4 py-2 text-sm font-semibold text-white transition hover:text-white"
           >
             <Plus className="size-4" />
             Find music
@@ -87,10 +87,10 @@ const LibraryPage = () => {
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                "rounded-full px-4 py-1.5 text-xs font-semibold transition-all shrink-0 active:scale-95",
                 tab === item.id
-                  ? "bg-white text-black"
-                  : "bg-white/10 text-zinc-300 hover:bg-white/20"
+                  ? "bg-white text-black shadow-md font-bold"
+                  : "glass-pill text-zinc-300 hover:text-white"
               )}
             >
               {item.label}
@@ -103,13 +103,13 @@ const LibraryPage = () => {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               <Link
                 to="/liked"
-                className="group rounded-lg p-3 transition hover:bg-white/10"
+                className="group rounded-2xl p-3 glass-card hover:bg-white/10 transition-all duration-300 block"
               >
-                <div className="mb-3 grid aspect-square w-full place-items-center rounded-md bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-400 shadow-lg">
-                  <Heart className="size-10 fill-white text-white" />
+                <div className="mb-3 grid aspect-square w-full place-items-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-400 shadow-lg border border-white/10">
+                  <Heart className="size-10 fill-white text-white drop-shadow-md" />
                 </div>
-                <p className="truncate font-semibold text-white">Liked Songs</p>
-                <p className="mt-1 text-xs text-zinc-400">Playlist · {likedSongs.length} songs</p>
+                <p className="truncate font-semibold text-white text-xs sm:text-sm">Liked Songs</p>
+                <p className="mt-1 text-[11px] sm:text-xs text-zinc-400">Playlist · {likedSongs.length} songs</p>
               </Link>
 
               {playlists.map((playlist) => (
@@ -119,7 +119,6 @@ const LibraryPage = () => {
                   subtitle={`Playlist · ${playlist.songs?.length ?? 0} songs`}
                   imageUrl={playlist.imageUrl}
                   href={`/playlist/${playlist._id}`}
-                  onPlay={playlist.songs?.length ? () => playSongs(playlist.songs) : undefined}
                 />
               ))}
             </div>
@@ -189,7 +188,6 @@ const LibraryPage = () => {
                 subtitle={album.artist}
                 imageUrl={album.imageUrl}
                 href={`/albums/${album._id}`}
-                onPlay={album.songs.length ? () => playSongs(album.songs) : undefined}
               />
             ))}
           </div>

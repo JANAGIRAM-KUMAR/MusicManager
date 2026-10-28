@@ -34,7 +34,7 @@ const LeftSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const playlists = useLibraryStore((state) => state.playlists);
-  const likedSongs = useLibraryStore((state) => state.likedSongIds);
+  const likedSongs = useLibraryStore((state) => state.likedSongs);
   const fetchLibrary = useLibraryStore((state) => state.fetchLibrary);
   const createPlaylist = useLibraryStore((state) => state.createPlaylist);
 
@@ -58,10 +58,12 @@ const LeftSidebar = () => {
 
   return (
     <div className="flex h-full flex-col gap-2">
-      <nav className="rounded-lg bg-zinc-900 p-2">
+      <nav className="rounded-2xl glass-panel p-2.5 shadow-lg">
         <div className="flex items-center gap-2 px-3 py-2">
-          <AudioLines className="size-5 text-emerald-400" />
-          <span className="text-sm font-bold tracking-tight text-white">Soundwave</span>
+          <div className="grid size-7 place-items-center rounded-full bg-emerald-500/15 border border-emerald-500/25">
+            <AudioLines className="size-4 text-emerald-400" />
+          </div>
+          <span className="text-sm font-black tracking-tight text-white">Soundwave</span>
         </div>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -74,8 +76,8 @@ const LeftSidebar = () => {
               key={item.to}
               to={item.to}
               className={cn(
-                "flex items-center gap-4 rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-400 transition hover:text-white",
-                active && "text-white"
+                "flex items-center gap-4 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-400 transition-all hover:text-white hover:bg-white/5",
+                active && "bg-white/10 text-white font-bold shadow-xs border border-white/10"
               )}
             >
               <Icon className="size-5" />
@@ -85,7 +87,7 @@ const LeftSidebar = () => {
         })}
       </nav>
 
-      <section className="flex min-h-0 flex-1 flex-col rounded-lg bg-zinc-900 p-2">
+      <section className="flex min-h-0 flex-1 flex-col rounded-2xl glass-panel p-2.5 shadow-lg">
         <div className="flex items-center justify-between px-2 py-2">
           <Link
             to="/library"
@@ -104,7 +106,7 @@ const LeftSidebar = () => {
                 <Plus className="size-5" />
               </button>
             </DialogTrigger>
-            <DialogContent className="border-zinc-800 bg-zinc-950 text-white sm:max-w-md">
+            <DialogContent className="border-white/10 glass-dock text-white sm:max-w-md rounded-2xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle>Create playlist</DialogTitle>
                 <DialogDescription className="text-zinc-400">
@@ -120,18 +122,18 @@ const LeftSidebar = () => {
                     if (event.key === "Enter") void handleCreate();
                   }}
                   placeholder="Playlist name"
-                  className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+                  className="border-white/15 bg-white/5 rounded-xl text-white placeholder:text-zinc-500 focus:border-white/30"
                 />
                 <Input
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="Description (optional)"
-                  className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+                  className="border-white/15 bg-white/5 rounded-xl text-white placeholder:text-zinc-500 focus:border-white/30"
                 />
               </div>
               <DialogFooter>
                 <Button
-                  className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
+                  className="w-full rounded-full bg-emerald-500 text-black hover:bg-emerald-400 shadow-lg shadow-emerald-500/25 font-bold"
                   onClick={() => void handleCreate()}
                   disabled={!title.trim()}
                 >
