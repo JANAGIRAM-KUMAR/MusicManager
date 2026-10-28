@@ -36,24 +36,24 @@ export const MediaCard = ({
             round ? "rounded-full" : "rounded-md"
           )}
         />
-      {false && onPlay && (
-        <button
-          type="button"
-          aria-label={`Play ${title}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const user = useAuthStore.getState().user;
-            if (!user) {
-              toast.error("Log in to listen");
-              useAuthStore.getState().openSignIn?.();
-              return;
-            }
-            onPlay?.();
-          }}
-            className="absolute right-2 bottom-2 grid size-11 translate-y-2 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-xl transition duration-200 group-hover:translate-y-0 group-hover:opacity-100 hover:scale-105 hover:bg-emerald-400"
+        {onPlay && (
+          <button
+            type="button"
+            aria-label={`Play ${title}`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              const user = useAuthStore.getState().user;
+              if (!user) {
+                toast.error("Log in to listen");
+                useAuthStore.getState().openSignIn?.();
+                return;
+              }
+              onPlay?.();
+            }}
+            className="absolute right-2 bottom-2 grid size-10 sm:size-11 translate-y-2 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 hover:scale-105 hover:bg-emerald-400 active:scale-95"
           >
-            <Play className="size-5 fill-current" />
+            <Play className="size-4.5 sm:size-5 fill-current ml-0.5" />
           </button>
         )}
       </div>

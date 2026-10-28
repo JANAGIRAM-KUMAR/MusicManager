@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Play } from "lucide-react";
 import { SignInButton } from "@/components/SignInButton";
 import { Button } from "@/components/ui/button";
 import { CoverImage } from "@/components/CoverImage";
@@ -10,10 +12,16 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useLibraryStore } from "@/stores/useLibraryStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { greeting } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Song } from "@/types";
 
+type CategoryFilter = "All" | "Music" | "Albums" | "Artists";
+
 const HomePage = () => {
+  const navigate = useNavigate();
   const isSignedIn = Boolean(useAuthStore((state) => state.user));
+  const [activeFilter, setActiveFilter] = useState<CategoryFilter>("All");
+
   const {
     fetchFeaturedSongs,
     fetchMadeForYouSongs,
@@ -70,87 +78,123 @@ const HomePage = () => {
         subtitle={song.artist}
         imageUrl={song.imageUrl}
         onPlay={() => playSong(song)}
-        className="w-[160px] shrink-0 sm:w-[180px]"
+        className="w-[140px] shrink-0 sm:w-[170px]"
       />
     ));
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-emerald-500/20 via-zinc-900 to-zinc-900 pb-10">
-      <div className="px-3 pt-3 sm:px-6 sm:pt-6">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="min-h-full bg-gradient-to-b from-emerald-600/20 via-zinc-900 to-zinc-900 pb-12">
+      <div className="px-3 pt-4 sm:px-6 sm:pt-6">
+        {/* Category Pills (Spotify Mobile & Desktop standard) */}
+        <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {(["All", "Music", "Albums", "Artists"] as CategoryFilter[]).map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={cn(
+                "px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 active:scale-95",
+                activeFilter === filter
+                  ? "bg-white text-black shadow-sm"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              )}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+
+        {/* Welcome Greeting */}
+        <div className="mb-5 sm:mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{greeting()}</h1>
+            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+              {greeting()}
+            </h1>
             {!isSignedIn && (
-              <p className="mt-1 max-w-xl text-sm text-zinc-400">
-                Browse the demo catalog and start listening. Sign in to build playlists and
-                save your favorite tracks.
+              <p className="mt-1 max-w-xl text-xs sm:text-sm text-zinc-400">
+                Browse our music catalog and start streaming. Sign in to save tracks and build your personal playlists.
               </p>
             )}
           </div>
           {!isSignedIn && (
             <SignInButton>
-              <Button className="rounded-full bg-white text-black hover:bg-zinc-200">
-                Sign in to save your library
+              <Button size="sm" className="rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold px-4">
+                Sign in
               </Button>
             </SignInButton>
           )}
         </div>
 
-        {quickPicks.length > 0 && (
-          <div className="mb-8 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Quick Picks 2-Column Grid on Mobile, 4-Column on Desktop */}
+        {(activeFilter === "All" || activeFilter === "Music") && quickPicks.length > 0 && (
+          <div className="mb-8 grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
             {quickPicks.map((pick) => (
               <div
                 key={pick.id}
-                className="group relative flex items-center gap-3 overflow-hidden rounded-md bg-white/10 transition hover:bg-white/20"
+                className="group relative flex items-center overflow-hidden rounded-md bg-white/10 transition-all hover:bg-white/20 shadow-sm"
               >
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const songs = pick.songs?.filter((s: any) => s && s.songUrl) || [];
-                  if (songs.length > 0) {
-                    playSongs(songs);
-                  } else if (pick.href) {
-                    window.location.assign(pick.href);
-                  }
-                }}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left"
-              >
-                <CoverImage
-                  src={pick.imageUrl}
-                  alt={pick.title}
-                  fallbackLabel={pick.title}
-                  className="size-16 shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">{pick.title}</p>
-                  <p className="truncate text-xs text-zinc-400">{pick.subtitle}</p>
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const playable = pick.songs?.filter((s: any) => s && s.songUrl) || [];
+                    if (playable.length > 0) {
+                      playSongs(playable);
+                    } else if (pick.href) {
+                      navigate(pick.href);
+                    }
+                  }}
+                  className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-left"
+                >
+                  <CoverImage
+                    src={pick.imageUrl}
+                    alt={pick.title}
+                    fallbackLabel={pick.title}
+                    className="size-12 sm:size-16 shrink-0 object-cover shadow-sm"
+                  />
+                  <div className="min-w-0 flex-1 pr-1 sm:pr-2">
+                    <p className="truncate text-xs sm:text-sm font-bold text-white">{pick.title}</p>
+                    <p className="truncate text-[10px] sm:text-xs text-zinc-400 mt-0.5">{pick.subtitle}</p>
+                  </div>
+                </button>
+
+                {/* Quick Play Action */}
+                <button
+                  type="button"
+                  aria-label={`Play ${pick.title}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const playable = pick.songs?.filter((s: any) => s && s.songUrl) || [];
+                    if (playable.length > 0) playSongs(playable);
+                  }}
+                  className="mr-2 sm:mr-3 grid size-8 sm:size-9 place-items-center rounded-full bg-emerald-500 text-black opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-105 active:scale-95 shrink-0 hidden sm:grid"
+                >
+                  <Play className="size-4 fill-current ml-0.5" />
+                </button>
               </div>
             ))}
           </div>
         )}
 
+        {/* Loading Skeletons */}
         {isLoading && featuredSongs.length === 0 && (
-          <div className="mb-6 flex gap-2">
+          <div className="mb-6 flex gap-3 overflow-x-auto pb-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="h-[220px] w-[160px] shrink-0 animate-pulse rounded-lg bg-white/5 sm:w-[180px]"
+                className="h-[210px] w-[140px] shrink-0 animate-pulse rounded-lg bg-white/5 sm:w-[170px]"
               />
             ))}
           </div>
         )}
 
-        {featuredSongs.length > 0 && (
+        {/* Featured Songs Section */}
+        {(activeFilter === "All" || activeFilter === "Music") && featuredSongs.length > 0 && (
           <SectionRow title="Featured today" className="mb-8">
             {renderSongCards(featuredSongs)}
           </SectionRow>
         )}
 
-        {recentlyPlayed.length > 0 && (
+        {/* Recently Played Section */}
+        {(activeFilter === "All" || activeFilter === "Music") && recentlyPlayed.length > 0 && (
           <SectionRow title="Jump back in" className="mb-8">
             {recentlyPlayed.slice(0, 10).map((song) => (
               <MediaCard
@@ -159,58 +203,62 @@ const HomePage = () => {
                 subtitle={song.artist}
                 imageUrl={song.imageUrl}
                 onPlay={() => playSong(song)}
-                className="w-[160px] shrink-0 sm:w-[180px]"
+                className="w-[140px] shrink-0 sm:w-[170px]"
               />
             ))}
           </SectionRow>
         )}
 
-        {madeForYouSongs.length > 0 && (
+        {/* Made For You Section */}
+        {(activeFilter === "All" || activeFilter === "Music") && madeForYouSongs.length > 0 && (
           <SectionRow title="Made for you" className="mb-8">
             {renderSongCards(madeForYouSongs)}
           </SectionRow>
         )}
 
-        {albums.length > 0 && (
+        {/* Popular Albums Section */}
+        {(activeFilter === "All" || activeFilter === "Albums") && albums.length > 0 && (
           <SectionRow title="Popular albums" className="mb-8">
             {albums.slice(0, 12).map((album) => (
-          <MediaCard
-            key={album._id}
-            title={album.title}
-            subtitle={album.artist}
-            imageUrl={album.imageUrl}
-            href={`/albums/${album._id}`}
-            onPlay={
-              (album.songs?.filter((s: any) => s && s.songUrl) || []).length > 0
-                ? () => {
-                    const songs = album.songs?.filter((s: any) => s && s.songUrl) || [];
-                    if (songs.length > 0) playSongs(songs);
-                  }
-                : undefined
-            }
-            className="w-[160px] shrink-0 sm:w-[180px]"
-          />
+              <MediaCard
+                key={album._id}
+                title={album.title}
+                subtitle={album.artist}
+                imageUrl={album.imageUrl}
+                href={`/albums/${album._id}`}
+                onPlay={
+                  (album.songs?.filter((s: any) => s && s.songUrl) || []).length > 0
+                    ? () => {
+                        const playable = album.songs?.filter((s: any) => s && s.songUrl) || [];
+                        if (playable.length > 0) playSongs(playable);
+                      }
+                    : undefined
+                }
+                className="w-[140px] shrink-0 sm:w-[170px]"
+              />
             ))}
           </SectionRow>
         )}
 
-        {trendingSongs.length > 0 && (
+        {/* Trending Songs Section */}
+        {(activeFilter === "All" || activeFilter === "Music") && trendingSongs.length > 0 && (
           <SectionRow title="Trending now" className="mb-8">
             {renderSongCards(trendingSongs)}
           </SectionRow>
         )}
 
-        {artists.length > 0 && (
+        {/* Popular Artists Section */}
+        {(activeFilter === "All" || activeFilter === "Artists") && artists.length > 0 && (
           <SectionRow title="Popular artists" className="mb-8">
             {artists.map((artist) => (
               <MediaCard
                 key={artist.name}
                 title={artist.name}
-                subtitle={`${artist.songCount} songs`}
+                subtitle={`${artist.songCount} tracks`}
                 imageUrl={artist.imageUrl}
                 href={`/artist/${encodeURIComponent(artist.name)}`}
                 round
-                className="w-[150px] shrink-0 sm:w-[170px]"
+                className="w-[135px] shrink-0 sm:w-[165px]"
               />
             ))}
           </SectionRow>
